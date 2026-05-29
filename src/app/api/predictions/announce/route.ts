@@ -63,18 +63,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Partido no encontrado" }, { status: 404 });
     }
 
-    // 3. Format predictions lines
-    // Sort users by points desc
-    const sortedUsers = [...users].sort((a, b) => b.points - a.points);
-    const predictionLines = sortedUsers
-      .map(u => {
-        const pred = predictions.find(p => p.user_id === u.id);
-        const scoreStr = pred ? `${pred.score_a} - ${pred.score_b}` : 'Sin pronóstico 🚫';
-        return `👤 **${u.name}**: ${scoreStr} (${u.points} pts)`;
-      })
-      .join('\n');
+    // 3. Format predictions (Admin only)
+    const ADMIN_EMAIL = 'jrodriguezl10@gmail.com';
+    let adminUser = users.find(u => u.email === ADMIN_EMAIL);
+    if (!adminUser) {
+      adminUser = users.find(u => u.role === 'admin');
+    }
 
-    const chatMsg = `🔒 **PREDICCIONES CERRADAS** — ${match.team_a} vs ${match.team_b}\nEl partido está por comenzar (Bloqueado faltando 10 minutos). Aquí están los pronósticos oficiales para transparencia:\n\n${predictionLines}\n\n[MatchID: ${match.id}]`;
+    let adminPredictionText = "";
+    if (adminUser) {
+      const pred = predictions.find(p => p.user_id === adminUser.id);
+      const scoreStr = pred ? `${pred.score_a} - ${pred.score_b}` : 'Sin pronóstico 🚫';
+      adminPredictionText = `👤 **Pronóstico del Administrador (${adminUser.name})**: ${scoreStr}\n📊 **Puntos antes del juego**: ${adminUser.points} pts`;
+    } else {
+      adminPredictionText = `⚠️ No se encontró un usuario administrador registrado.`;
+    }
+
+    const chatMsg = `🔒 **PARTIDO INICIADO** — ${match.team_a} vs ${match.team_b}\nEl partido está por comenzar (Bloqueado faltando 10 minutos).\n\n${adminPredictionText}\n\n[MatchID: ${match.id}]`;
 
     // 4. Save to chat messages
     const timestamp = new Date().toISOString();
