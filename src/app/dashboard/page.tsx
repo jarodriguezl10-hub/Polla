@@ -195,6 +195,61 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [showFloatingChat]);
 
+  // Auto-announce match predictions to chat when a match starts/locks (10 mins before kickoff)
+  useEffect(() => {
+    if (!matches || matches.length === 0) return;
+
+    const checkAndAnnounce = async () => {
+      const now = Date.now();
+      for (const match of matches) {
+        const kickoff = new Date(match.kickoff_utc || match.date).getTime();
+        const diffMins = (kickoff - now) / 60000;
+        
+        // Match locks 10 minutes before kickoff.
+        // We check matches that are locked and kickoff is recent (started within the last 24h)
+        const isLocked = diffMins <= 10;
+        const isRecent = (now - kickoff) < 24 * 60 * 60 * 1000;
+
+        if (isLocked && isRecent) {
+          const announcedKey = `announced_${match.id}`;
+          if (!localStorage.getItem(announcedKey)) {
+            try {
+              const res = await fetch('/api/predictions/announce', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ matchId: match.id })
+              });
+              if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                  localStorage.setItem(announcedKey, 'true');
+                }
+              }
+            } catch (e) {
+              console.error('Error invoking prediction announcement:', e);
+            }
+          }
+        }
+      }
+    };
+
+    checkAndAnnounce();
+    const interval = setInterval(checkAndAnnounce, 30000); // Check every 30s
+    return () => clearInterval(interval);
+  }, [matches]);
+
+  // Toggle body class for mobile chat drawer backdrop dimming
+  useEffect(() => {
+    if (showFloatingChat) {
+      document.body.classList.add('chat-open');
+    } else {
+      document.body.classList.remove('chat-open');
+    }
+    return () => {
+      document.body.classList.remove('chat-open');
+    };
+  }, [showFloatingChat]);
+
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
     setTimeout(() => {
@@ -455,43 +510,7 @@ export default function DashboardPage() {
       });
 
       if (res.ok) {
-        const match = matches.find((m) => m.id === matchId);
-        const sA = parseInt(scoreA);
-        const sB = parseInt(scoreB);
-
-        // Refresh leaderboard to get updated points
-        let leaderboardData: any[] = [];
-        try {
-          const lbRes = await fetch('/api/leaderboard');
-          if (lbRes.ok) leaderboardData = await lbRes.json();
-        } catch (_) {}
-
-        // Build leaderboard summary (top 5)
-        const top5 = leaderboardData.slice(0, 5);
-        const rankingLines = top5.map((u: any, i: number) =>
-          `${i + 1}. ${u.name} — ${u.points} pts`
-        ).join('\n');
-
-        // Auto-announce in chat
-        const result = sA > sB
-          ? `🏆 Ganó ${match?.team_a}!`
-          : sA < sB
-          ? `🏆 Ganó ${match?.team_b}!`
-          : '🤝 ¡Empate!';
-
-        const chatMsg = `⚽ RESULTADO OFICIAL\n${match?.team_a} ${sA} - ${sB} ${match?.team_b}\n${result}\n\n📊 Tabla de Posiciones:\n${rankingLines}`;
-
-        await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: currentUser.id,
-            userName: '🤖 Sistema Polla',
-            text: chatMsg
-          })
-        });
-
-        showToast('✅ Resultado guardado y anunciado en el chat.', 'success');
+        showToast('✅ Resultado guardado y puntos actualizados.', 'success');
         loadAdminData();
       } else {
         const data = await res.json();
