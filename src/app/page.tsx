@@ -132,7 +132,7 @@ export default function LoginPage() {
 
           {/* Player image banner */}
           <div className="login-hero-container">
-            <img src="/LUCHO-web-1024x576.png" alt="Luis Díaz" className="login-hero-img" />
+            <img src="/dentro-de-un-ano-se-celebrara-la-fiesta-del-futbol-mundial-2.jpg" alt="Fiesta del Fútbol Mundial" className="login-hero-img" />
           </div>
 
           {step === 'email' ? (
