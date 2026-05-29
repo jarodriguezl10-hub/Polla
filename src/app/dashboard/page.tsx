@@ -259,7 +259,7 @@ export default function DashboardPage() {
 
   const handleLogout = () => {
     localStorage.removeItem('polla_user');
-    router.push('/');
+    window.location.href = '/';
   };
 
   const scrollToChatBottom = () => {
@@ -929,20 +929,56 @@ export default function DashboardPage() {
             {/* Filters panel */}
             <div className="glass-panel predictions-filters">
               <div className="filter-group">
-                <label htmlFor="filter-phase"><i className="fa-solid fa-filter"></i> Fase:</label>
-                <select id="filter-phase" value={phaseFilter} onChange={(e) => setPhaseFilter(e.target.value)}>
-                  <option value="all">Todos los partidos</option>
-                  <option value="groups">Fase de Grupos</option>
-                  <option value="elimination">Fases Eliminatorias</option>
-                </select>
+                <span className="filter-label"><i className="fa-solid fa-filter"></i> Fase:</span>
+                <div className="segmented-control">
+                  <button 
+                    type="button"
+                    className={`segment-btn ${phaseFilter === 'all' ? 'active' : ''}`}
+                    onClick={() => setPhaseFilter('all')}
+                  >
+                    Todos
+                  </button>
+                  <button 
+                    type="button"
+                    className={`segment-btn ${phaseFilter === 'groups' ? 'active' : ''}`}
+                    onClick={() => setPhaseFilter('groups')}
+                  >
+                    Grupos
+                  </button>
+                  <button 
+                    type="button"
+                    className={`segment-btn ${phaseFilter === 'elimination' ? 'active' : ''}`}
+                    onClick={() => setPhaseFilter('elimination')}
+                  >
+                    Eliminatorias
+                  </button>
+                </div>
               </div>
               <div className="filter-group">
-                <label htmlFor="filter-state"><i className="fa-solid fa-lock-open"></i> Estado:</label>
-                <select id="filter-state" value={stateFilter} onChange={(e) => setStateFilter(e.target.value)}>
-                  <option value="all">Todos</option>
-                  <option value="open">Abiertos para Pronóstico</option>
-                  <option value="locked">Bloqueados / Jugados</option>
-                </select>
+                <span className="filter-label"><i className="fa-solid fa-lock-open"></i> Estado:</span>
+                <div className="segmented-control">
+                  <button 
+                    type="button"
+                    className={`segment-btn ${stateFilter === 'all' ? 'active' : ''}`}
+                    onClick={() => setStateFilter('all')}
+                  >
+                    Todos
+                  </button>
+                  <button 
+                    type="button"
+                    className={`segment-btn ${stateFilter === 'open' ? 'active' : ''}`}
+                    onClick={() => setStateFilter('open')}
+                  >
+                    Abiertos
+                  </button>
+                  <button 
+                    type="button"
+                    className={`segment-btn ${stateFilter === 'locked' ? 'active' : ''}`}
+                    onClick={() => setStateFilter('locked')}
+                  >
+                    Cerrados
+                  </button>
+                </div>
               </div>
             </div>
 
