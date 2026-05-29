@@ -23,6 +23,13 @@
     --border-radius: 20px;
 }
 
+.desktop-only {
+    display: inline-block;
+}
+.mobile-only {
+    display: none;
+}
+
 /* Reset and Core Styles */
 * {
     box-sizing: border-box;
@@ -1090,76 +1097,7 @@ body {
     background: rgba(37, 99, 235, 0.15);
 }
 
-/* Responsive Styles */
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-    .metrics-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .dashboard-layout {
-        grid-template-columns: 1fr;
-    }
-    .admin-match-row {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-    .admin-score-inputs {
-        justify-content: center;
-    }
-    .desktop-only {
-        display: none;
-    }
-}
 
-@media (max-width: 600px) {
-    .match-card-body {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        gap: 8px;
-    }
-    .team-block {
-        flex: 1;
-    }
-    .score-inputs {
-        flex: 1.6;
-        justify-content: center;
-    }
-    .score-spinner {
-        border-radius: 8px;
-    }
-    .spinner-btn {
-        width: 28px;
-        height: 34px;
-        font-size: 0.95rem;
-    }
-    .score-val {
-        width: 26px;
-        font-size: 1.1rem;
-    }
-    .flag-img {
-        width: 45px;
-        height: 30px;
-    }
-    .team-name {
-        font-size: 0.85rem;
-    }
-    .score-colon {
-        font-size: 1.3rem;
-    }
-    .score-locked-display {
-        font-size: 1.3rem;
-        gap: 8px;
-    }
-    .locked-score {
-        padding: 4px 10px;
-        min-width: 40px;
-    }
-}
 
 /* FLOATING CHAT SYSTEM - BOTTOM LEFT */
 .chat-fab {
@@ -1391,6 +1329,16 @@ body {
 
     .app-container {
         padding-bottom: 20px;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+    .mobile-only {
+        display: inline-block !important;
+    }
+    .dashboard-layout {
+        grid-template-columns: 1fr !important;
     }
 
     /* 1. Sticky Glass Header for Mobile */
