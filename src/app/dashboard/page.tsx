@@ -55,6 +55,9 @@ const PARTICIPATING_COUNTRIES = [
   { name: "Uzbekistán", code: "uz" }
 ];
 
+// Admin email — only this user sees the Administration tab
+const ADMIN_EMAIL = 'jrodriguezl10@gmail.com';
+
 export default function DashboardPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -67,7 +70,11 @@ export default function DashboardPage() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
-  
+
+  // Unread chat messages count
+  const [unreadCount, setUnreadCount] = useState(0);
+  const lastSeenChatTimestampRef = useRef<string | null>(null);
+
   // AI Recommendations state (map of matchId -> recommendation text)
   const [aiPredictions, setAiPredictions] = useState<{ [key: string]: string }>({});
   const [aiLoading, setAiLoading] = useState<{ [key: string]: boolean }>({});
@@ -134,11 +141,13 @@ export default function DashboardPage() {
     if (!showFloatingChat) return;
 
     loadChatMessages();
+    // Mark all as read when chat opens
+    lastSeenChatTimestampRef.current = new Date().toISOString();
+    setUnreadCount(0);
 
     let chatInterval: any = null;
 
     if (isRealSupabase) {
-      // Connect to real-time WebSockets via Supabase channel
       const channel = supabase
         .channel('public:chat_messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload: any) => {
@@ -151,7 +160,6 @@ export default function DashboardPage() {
         supabase.removeChannel(channel);
       };
     } else {
-      // Fallback Polling in mock offline mode (every 3 seconds)
       chatInterval = setInterval(async () => {
         try {
           const res = await fetch('/api/chat');
@@ -159,15 +167,32 @@ export default function DashboardPage() {
             const data = await res.json();
             setChatMessages(data);
           }
-        } catch (e) {
-          // Ignore
-        }
+        } catch (e) { /* ignore */ }
       }, 3000);
 
-      return () => {
-        clearInterval(chatInterval);
-      };
+      return () => { clearInterval(chatInterval); };
     }
+  }, [showFloatingChat]);
+
+  // Background polling for unread count when chat is CLOSED
+  useEffect(() => {
+    if (showFloatingChat) return; // already watching live
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/chat');
+        if (res.ok) {
+          const data: any[] = await res.json();
+          if (!lastSeenChatTimestampRef.current) {
+            lastSeenChatTimestampRef.current = new Date().toISOString();
+          }
+          const unseen = data.filter(
+            (m) => new Date(m.created_at) > new Date(lastSeenChatTimestampRef.current!)
+          );
+          setUnreadCount(unseen.length);
+        }
+      } catch (e) { /* ignore */ }
+    }, 15000); // poll every 15 sec
+    return () => clearInterval(interval);
   }, [showFloatingChat]);
 
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -405,10 +430,15 @@ export default function DashboardPage() {
     }
   };
 
-  // Admin save match result
+  // Admin save match result + auto-announce in chat
   const handleSaveAdminResult = async (matchId: string) => {
     const scoreA = adminScores[matchId]?.scoreA;
     const scoreB = adminScores[matchId]?.scoreB;
+
+    if (scoreA === '' || scoreA === undefined || scoreB === '' || scoreB === undefined) {
+      showToast('Ingresa ambos marcadores antes de guardar.', 'error');
+      return;
+    }
 
     setAdminLoading((prev) => ({ ...prev, [matchId]: true }));
 
@@ -418,14 +448,51 @@ export default function DashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           matchId,
-          scoreA: scoreA === '' ? null : parseInt(scoreA),
-          scoreB: scoreB === '' ? null : parseInt(scoreB),
+          scoreA: parseInt(scoreA),
+          scoreB: parseInt(scoreB),
           adminEmail: currentUser.email
         })
       });
 
       if (res.ok) {
-        showToast('Resultado guardado y clasificación recalculada.', 'success');
+        const match = matches.find((m) => m.id === matchId);
+        const sA = parseInt(scoreA);
+        const sB = parseInt(scoreB);
+
+        // Refresh leaderboard to get updated points
+        let leaderboardData: any[] = [];
+        try {
+          const lbRes = await fetch('/api/leaderboard');
+          if (lbRes.ok) leaderboardData = await lbRes.json();
+        } catch (_) {}
+
+        // Build leaderboard summary (top 5)
+        const top5 = leaderboardData.slice(0, 5);
+        const rankingLines = top5.map((u: any, i: number) =>
+          `${i + 1}. ${u.name} — ${u.points} pts`
+        ).join('\n');
+
+        // Auto-announce in chat
+        const result = sA > sB
+          ? `🏆 Ganó ${match?.team_a}!`
+          : sA < sB
+          ? `🏆 Ganó ${match?.team_b}!`
+          : '🤝 ¡Empate!';
+
+        const chatMsg = `⚽ RESULTADO OFICIAL\n${match?.team_a} ${sA} - ${sB} ${match?.team_b}\n${result}\n\n📊 Tabla de Posiciones:\n${rankingLines}`;
+
+        await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentUser.id,
+            userName: '🤖 Sistema Polla',
+            text: chatMsg
+          })
+        });
+
+        showToast('✅ Resultado guardado y anunciado en el chat.', 'success');
+        loadAdminData();
       } else {
         const data = await res.json();
         showToast(data.error || 'Error al actualizar', 'error');
@@ -717,7 +784,7 @@ export default function DashboardPage() {
         >
           <i className="fa-solid fa-circle-info"></i> Reglas
         </button>
-        {currentUser.role === 'admin' && (
+        {(currentUser.role === 'admin' || currentUser.email === ADMIN_EMAIL) && (
           <button
             onClick={() => switchTab('tab-admin')}
             className={`tab-btn ${activeTab === 'tab-admin' ? 'active' : ''}`}
@@ -1153,7 +1220,7 @@ export default function DashboardPage() {
         )}
 
         {/* TAB 6: ADMINISTRACIÓN */}
-        {activeTab === 'tab-admin' && currentUser.role === 'admin' && (
+        {activeTab === 'tab-admin' && (currentUser.role === 'admin' || currentUser.email === ADMIN_EMAIL) && (
           <section className="tab-pane active">
             <div className="section-header">
               <h2>Consola de Administración y Simulador</h2>
@@ -1501,10 +1568,39 @@ export default function DashboardPage() {
       {/* FLOATING CHAT BUTTON (FAB) - BOTTOM LEFT */}
       <button 
         className={`chat-fab ${showFloatingChat ? 'active' : ''}`} 
-        onClick={() => setShowFloatingChat(!showFloatingChat)}
+        onClick={() => {
+          setShowFloatingChat(!showFloatingChat);
+          if (!showFloatingChat) {
+            // Mark as read when opening
+            lastSeenChatTimestampRef.current = new Date().toISOString();
+            setUnreadCount(0);
+          }
+        }}
         title="Chat de Grupo"
+        style={{ position: 'relative' }}
       >
         <i className="fa-solid fa-comments"></i>
+        {unreadCount > 0 && !showFloatingChat && (
+          <span style={{
+            position: 'absolute',
+            top: '-6px',
+            right: '-6px',
+            background: '#ef4444',
+            color: '#fff',
+            borderRadius: '50%',
+            width: '20px',
+            height: '20px',
+            fontSize: '11px',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '2px solid #0f172a',
+            lineHeight: 1
+          }}>
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
       </button>
 
       {/* FLOATING CHAT WINDOW */}

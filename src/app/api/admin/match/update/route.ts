@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase, recalculateMockScores } from '@/lib/supabaseClient';
 
+const ADMIN_EMAIL = 'jrodriguezl10@gmail.com';
+
 export async function POST(request: Request) {
   try {
     const { matchId, scoreA, scoreB, adminEmail } = await request.json();
@@ -10,9 +12,11 @@ export async function POST(request: Request) {
 
     // 1. Verify admin permissions
     let isAdmin = false;
-    let users: any[] = [];
 
-    if (isRealSupabase) {
+    // Always allow the designated admin email
+    if (adminEmail === ADMIN_EMAIL) {
+      isAdmin = true;
+    } else if (isRealSupabase) {
       const { data: adminUser } = await supabase.from('users').select('*').eq('email', adminEmail).single();
       isAdmin = adminUser?.role === 'admin';
     } else {
@@ -20,10 +24,8 @@ export async function POST(request: Request) {
       const path = require('path');
       const DB_PATH = path.join(process.cwd(), 'database.json');
       const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-      
       const adminUser = db.users.find((u: any) => u.email === adminEmail);
       isAdmin = adminUser?.role === 'admin';
-      users = db.users;
     }
 
     if (!isAdmin) {

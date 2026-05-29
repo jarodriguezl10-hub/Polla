@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase } from '@/lib/supabaseClient';
 
+const ADMIN_EMAIL = 'jrodriguezl10@gmail.com';
+
 export async function POST(request: Request) {
   try {
     const { matchId, teamA, teamB, teamACode, teamBCode, adminEmail } = await request.json();
@@ -9,17 +11,19 @@ export async function POST(request: Request) {
     }
 
     // Verify admin
-    let isAdmin = false;
-    if (isRealSupabase) {
-      const { data: adminUser } = await supabase.from('users').select('role').eq('email', adminEmail).single();
-      isAdmin = adminUser?.role === 'admin';
-    } else {
-      const fs = require('fs');
-      const path = require('path');
-      const DB_PATH = path.join(process.cwd(), 'database.json');
-      const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-      const adminUser = db.users.find((u: any) => u.email === adminEmail);
-      isAdmin = adminUser?.role === 'admin';
+    let isAdmin = adminEmail === ADMIN_EMAIL;
+    if (!isAdmin) {
+      if (isRealSupabase) {
+        const { data: adminUser } = await supabase.from('users').select('role').eq('email', adminEmail).single();
+        isAdmin = adminUser?.role === 'admin';
+      } else {
+        const fs = require('fs');
+        const path = require('path');
+        const DB_PATH = path.join(process.cwd(), 'database.json');
+        const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+        const adminUser = db.users.find((u: any) => u.email === adminEmail);
+        isAdmin = adminUser?.role === 'admin';
+      }
     }
 
     if (!isAdmin) {
