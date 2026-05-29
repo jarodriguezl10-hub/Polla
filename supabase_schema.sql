@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS public.matches (
     score_a INTEGER,
     score_b INTEGER,
     played BOOLEAN DEFAULT FALSE,
+    ai_prediction TEXT DEFAULT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
