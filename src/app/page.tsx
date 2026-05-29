@@ -124,7 +124,7 @@ export default function LoginPage() {
         <div className="glass-panel login-card">
           <div className="login-header">
             <div className="logo-shield">
-              <i className="fa-solid fa-trophy text-gold gold-glow"></i>
+              <img src="/JD8048-FUTS_balon.jpg" alt="Balón" className="logo-ball-image" />
             </div>
             <h1>Polla Mundial 2026</h1>
             <p className="subtitle">Juego de Pronósticos Oficial</p>

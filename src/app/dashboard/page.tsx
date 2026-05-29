@@ -753,7 +753,7 @@ export default function DashboardPage() {
       {/* Header bar */}
       <header className="glass-panel main-header">
         <div className="header-brand">
-          <i className="fa-solid fa-trophy trophy-gradient"></i>
+          <img src="/JD8048-FUTS_balon.jpg" alt="Balón" className="header-ball-logo" />
           <h2>Polla Mundial 2026</h2>
         </div>
 

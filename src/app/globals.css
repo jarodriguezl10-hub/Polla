@@ -11,9 +11,10 @@
     --color-text: #0f172a;
     --color-text-muted: #475569;
     
+    --color-fifa-blue: #004882; /* Premium FIFA Blue */
     --color-primary: #10b981; /* Field Green */
     --color-secondary: #059669; /* FIFA Green */
-    --color-accent: #2563eb; /* Tournament Blue */
+    --color-accent: var(--color-fifa-blue); /* Tournament Blue */
     --color-warning: #d97706; /* Golden Trophy */
     --color-danger: #ef4444; /* Red Card */
     
@@ -131,13 +132,14 @@ body {
     transition: var(--transition-smooth);
 }
 .btn-primary {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    background: linear-gradient(135deg, #00569e 0%, var(--color-fifa-blue) 100%);
     color: white;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
+    box-shadow: 0 4px 15px rgba(0, 72, 130, 0.25);
 }
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, var(--color-fifa-blue) 0%, #003661 100%);
+    box-shadow: 0 6px 20px rgba(0, 72, 130, 0.4);
 }
 .btn-secondary {
     background: #ffffff;
@@ -543,13 +545,15 @@ body {
 .match-card {
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1.5px solid rgba(0, 72, 130, 0.18);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
     transition: var(--transition-smooth);
 }
 .match-card:hover {
-    border-color: var(--color-primary);
-    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.06);
+    border-color: var(--color-fifa-blue);
+    box-shadow: 0 8px 30px rgba(0, 72, 130, 0.15);
+    transform: translateY(-2px);
 }
 .match-card-header {
     display: flex;
@@ -613,13 +617,56 @@ body {
     align-items: center;
     gap: 12px;
 }
+/* Soccer Ball Brand Logo Styles */
+.header-ball-logo {
+    width: 34px;
+    height: 34px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-fifa-blue);
+    box-shadow: 0 0 10px rgba(0, 72, 130, 0.35);
+    margin-right: 10px;
+    animation: rotateBall 15s linear infinite;
+    transition: transform 0.3s ease;
+}
+.header-ball-logo:hover {
+    animation-play-state: paused;
+    transform: scale(1.1);
+}
+
+.logo-ball-image {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--color-fifa-blue);
+    box-shadow: 0 0 15px rgba(0, 72, 130, 0.4);
+    animation: rotateBall 20s linear infinite;
+    transition: transform 0.3s ease;
+}
+.logo-ball-image:hover {
+    animation-play-state: paused;
+    transform: scale(1.1);
+}
+
+@keyframes rotateBall {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .score-spinner {
     display: flex;
     align-items: center;
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
     border-radius: 10px;
     overflow: hidden;
+    transition: var(--transition-smooth);
+}
+.score-spinner:hover, .score-spinner:focus-within {
+    border-color: var(--color-fifa-blue);
+    box-shadow: 0 0 0 3px rgba(0, 72, 130, 0.15);
+    background: #f0f7ff;
 }
 .spinner-btn {
     background: #ffffff;
@@ -633,8 +680,8 @@ body {
     transition: var(--transition-smooth);
 }
 .spinner-btn:hover {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--color-secondary);
+    background: rgba(0, 72, 130, 0.1);
+    color: var(--color-fifa-blue);
 }
 .score-val {
     width: 36px;
@@ -1532,6 +1579,9 @@ body {
         padding: 12px;
         border-radius: 16px;
         margin-bottom: 12px;
+        border: 1.5px solid rgba(0, 72, 130, 0.35) !important;
+        box-shadow: 0 4px 15px rgba(0, 72, 130, 0.08) !important;
+        background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%) !important;
     }
 
     .match-card-header {
