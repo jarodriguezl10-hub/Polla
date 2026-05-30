@@ -3,10 +3,11 @@ import { supabase, isRealSupabase } from '@/lib/supabaseClient';
 
 export async function POST(request: Request) {
   try {
-    const { email, code, name } = await request.json();
-    if (!email || !code) {
+    const { email: rawEmail, code, name } = await request.json();
+    if (!rawEmail || !code) {
       return NextResponse.json({ error: "Email y código son obligatorios" }, { status: 400 });
     }
+    const email = rawEmail.trim().toLowerCase();
 
     let isValid = false;
 

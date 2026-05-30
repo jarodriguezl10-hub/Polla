@@ -4,10 +4,11 @@ import { supabase, isRealSupabase } from '@/lib/supabaseClient';
 
 export async function POST(request: Request) {
   try {
-    const { email, name } = await request.json();
-    if (!email || !email.includes('@')) {
+    const { email: rawEmail, name } = await request.json();
+    if (!rawEmail || !rawEmail.includes('@')) {
       return NextResponse.json({ error: "Email no válido" }, { status: 400 });
     }
+    const email = rawEmail.trim().toLowerCase();
 
     // Check if user exists in the database
     let userExists = false;

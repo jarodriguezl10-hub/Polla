@@ -64,8 +64,8 @@ export async function POST(request: Request) {
     }
 
     // 3. Format predictions (Admin only)
-    const ADMIN_EMAIL = 'jrodriguezl10@gmail.com';
-    let adminUser = users.find(u => u.email === ADMIN_EMAIL);
+    const ADMIN_EMAILS = ['jarodriguezl10@gmail.com', 'jrodriguezl10@gmail.com', 'mario.montalvo@gmail.com', 'cristhiancamilo@gmail.com'];
+    let adminUser = users.find(u => ADMIN_EMAILS.includes(u.email.toLowerCase()));
     if (!adminUser) {
       adminUser = users.find(u => u.role === 'admin');
     }

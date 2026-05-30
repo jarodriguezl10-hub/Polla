@@ -49,12 +49,13 @@ export default function LoginPage() {
       return;
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
     setLoading(true);
     try {
       const res = await fetch('/api/auth/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name: showNameInput ? name : '' })
+        body: JSON.stringify({ email: normalizedEmail, name: showNameInput ? name : '' })
       });
       const data = await res.json();
 
@@ -88,12 +89,13 @@ export default function LoginPage() {
       return;
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
     setLoading(true);
     try {
       const res = await fetch('/api/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code, name })
+        body: JSON.stringify({ email: normalizedEmail, code, name })
       });
       const data = await res.json();
 
@@ -163,7 +165,7 @@ export default function LoginPage() {
                   id="login-email"
                   placeholder="nombre@correo.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.toLowerCase().trim())}
                   disabled={loading}
                   required
                 />

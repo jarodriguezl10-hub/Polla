@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase } from '@/lib/supabaseClient';
 
-const ADMIN_EMAIL = 'jrodriguezl10@gmail.com';
+const ADMIN_EMAILS = ['jarodriguezl10@gmail.com', 'jrodriguezl10@gmail.com', 'mario.montalvo@gmail.com', 'cristhiancamilo@gmail.com'];
 
 export async function POST(request: Request) {
   try {
@@ -11,17 +11,17 @@ export async function POST(request: Request) {
     }
 
     // Verify admin
-    let isAdmin = adminEmail === ADMIN_EMAIL;
+    let isAdmin = ADMIN_EMAILS.includes(adminEmail.trim().toLowerCase());
     if (!isAdmin) {
       if (isRealSupabase) {
-        const { data: adminUser } = await supabase.from('users').select('role').eq('email', adminEmail).single();
+        const { data: adminUser } = await supabase.from('users').select('role').eq('email', adminEmail.trim().toLowerCase()).single();
         isAdmin = adminUser?.role === 'admin';
       } else {
         const fs = require('fs');
         const path = require('path');
         const DB_PATH = path.join(process.cwd(), 'database.json');
         const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-        const adminUser = db.users.find((u: any) => u.email === adminEmail);
+        const adminUser = db.users.find((u: any) => u.email.toLowerCase() === adminEmail.trim().toLowerCase());
         isAdmin = adminUser?.role === 'admin';
       }
     }

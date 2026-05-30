@@ -311,7 +311,7 @@ function calculatePredictionPoints(predA: number, predB: number, realA: number, 
     return { points: 0, exact: false, winner: false, diff: false };
   }
 
-  const isGroup = phase === "groups";
+  const isGroup = phase === "groups" || phase === "PRUEBA";
   const ptsWinner = isGroup ? 5 : 10;
   const ptsGoals = isGroup ? 2 : 4;
   const ptsDiff = isGroup ? 1 : 2;
