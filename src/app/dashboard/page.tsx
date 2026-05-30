@@ -2821,7 +2821,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* FLOATING CHAT BUTTON (FAB) - BOTTOM LEFT */}
+      {/* FLOATING CHAT BUTTON (FAB) - BOTTOM RIGHT */}
       <button 
         className={`chat-fab ${showFloatingChat ? 'active' : ''}`} 
         onClick={() => {
@@ -2833,7 +2833,6 @@ export default function DashboardPage() {
           }
         }}
         title="Chat de Grupo"
-        style={{ position: 'relative' }}
       >
         <i className="fa-solid fa-comments"></i>
         {unreadCount > 0 && !showFloatingChat && (
