@@ -2278,6 +2278,35 @@ body {
     background: #ffedd5 !important;
 }
 
+.imminent-card.bg-blue {
+    background: #e0f2fe !important; /* pastel blue */
+    border: 1px solid #bae6fd !important;
+    color: #1e3a8a !important;
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.08) !important;
+}
+.imminent-card.bg-blue .imminent-card-header {
+    border-bottom: 1px solid #bae6fd !important;
+    color: #1e40af !important;
+}
+.imminent-card.bg-blue .imminent-countdown {
+    background: #bae6fd !important;
+    color: #1e3a8a !important;
+}
+.imminent-card.bg-blue .imminent-score {
+    background: #bae6fd !important;
+    color: #1e3a8a !important;
+}
+.imminent-card.bg-blue .team-name-sm {
+    color: #1e40af !important;
+}
+.imminent-card.bg-blue button {
+    border-color: #0284c7 !important;
+    color: #0284c7 !important;
+}
+.imminent-card.bg-blue button:hover {
+    background: #f0f9ff !important;
+}
+
 .imminent-card-header {
     display: flex;
     justify-content: space-between;

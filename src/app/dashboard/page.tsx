@@ -1473,11 +1473,20 @@ export default function DashboardPage() {
                 <div className="imminent-matches-grid">
                   {imminentMatches.map((match) => {
                     const isPlayed = match.played;
+                    const matchDate = new Date(match.kickoff_utc || match.date).getTime();
+                    const now = new Date().getTime();
+                    const diffMins = (matchDate - now) / 60000;
+                    const isLocked = diffMins <= 10;
                     
-                    // Naranja si el usuario no ha pronosticado; verde si ya pronosticó
                     const pred = predictions.find((p) => p.match_id === match.id);
                     const hasPrediction = pred && pred.score_a !== null && pred.score_b !== null;
-                    const cardBgClass = hasPrediction ? "imminent-card bg-green" : "imminent-card bg-orange";
+                    
+                    let cardBgClass = "imminent-card bg-orange";
+                    if (isLocked) {
+                      cardBgClass = "imminent-card bg-blue";
+                    } else if (hasPrediction) {
+                      cardBgClass = "imminent-card bg-green";
+                    }
                     
                     return (
                       <div key={match.id} className={cardBgClass}>
@@ -1519,13 +1528,22 @@ export default function DashboardPage() {
                             {formatDateFriendly(match.kickoff_utc || match.date)}
                             {isPlayed && ` (Oficial: ${match.score_a} - ${match.score_b})`}
                           </span>
-                          {!isPlayed && (
+                          {!isPlayed && !isLocked && (
                             <button 
                               className="btn btn-xs btn-primary-outline" 
                               style={{ fontSize: '0.7rem', padding: '3px 8px', background: 'transparent', border: '1px solid var(--color-primary)', color: 'var(--color-primary)', borderRadius: '4px', cursor: 'pointer' }}
                               onClick={() => switchTab('tab-predictions', match.id)}
                             >
                               {hasPrediction ? "Editar" : "Pronosticar"}
+                            </button>
+                          )}
+                          {isLocked && !isPlayed && (
+                            <button 
+                              className="btn btn-xs btn-secondary-outline" 
+                              style={{ fontSize: '0.7rem', padding: '3px 8px', background: 'transparent', border: '1px solid var(--color-primary)', color: 'var(--color-primary)', borderRadius: '4px', cursor: 'pointer' }}
+                              onClick={() => viewGroupPredictions(match.id)}
+                            >
+                              <i className="fa-solid fa-eye"></i> Ver resultados
                             </button>
                           )}
                         </div>
@@ -2666,13 +2684,12 @@ export default function DashboardPage() {
                     <tr>
                       <th>Participante</th>
                       <th className="text-center">Pronóstico</th>
-                      <th className="text-right">Puntos Ganados</th>
                     </tr>
                   </thead>
                   <tbody>
                     {modalPreds.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="text-center" style={{ color: 'var(--color-text-muted)' }}>
+                        <td colSpan={2} className="text-center" style={{ color: 'var(--color-text-muted)' }}>
                           Ninguno ingresó pronóstico.
                         </td>
                       </tr>
@@ -2682,9 +2699,6 @@ export default function DashboardPage() {
                           <td><strong>{pred.userName}</strong></td>
                           <td className="text-center" style={{ fontWeight: 800, fontSize: '1.1rem', color: '#0f172a' }}>
                             {pred.scoreA} : {pred.scoreB}
-                          </td>
-                          <td className="text-right text-green" style={{ fontWeight: 800 }}>
-                            {modalMatch.played ? `+${pred.pointsEarned} pts` : '-'}
                           </td>
                         </tr>
                       ))
