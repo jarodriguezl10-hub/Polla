@@ -1280,9 +1280,9 @@ export default function DashboardPage() {
       <header className="glass-panel main-header">
         <div className="header-brand">
           <img src="/JD8048-FUTS_balon.jpg" alt="Balón" className="header-ball-logo" />
-          <h2 style={{ whiteSpace: 'normal', lineHeight: 1.1, maxWidth: '160px' }}>
-            Polla Mundial <br/> 
-            2026 <span style={{ fontSize: '0.65rem', color: 'var(--color-primary)', fontWeight: 'bold', marginLeft: '4px' }}>v{process.env.NEXT_PUBLIC_APP_VERSION || '2.1'}</span>
+          <h2 style={{ lineHeight: 1.1, fontSize: 'clamp(0.85rem, 4vw, 1.1rem)' }}>
+            <span style={{ whiteSpace: 'nowrap' }}>Polla Mundial</span> <br/> 
+            2026
           </h2>
         </div>
 
@@ -1303,7 +1303,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Notification Bell */}
-          <div className="notification-bell-container" style={{ position: 'relative' }}>
+          <div className="notification-bell-container" style={{ position: 'relative', marginRight: '4px' }}>
             <button 
               className="btn btn-icon bell-btn" 
               onClick={() => setShowNotifications(!showNotifications)}
