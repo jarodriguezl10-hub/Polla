@@ -1511,6 +1511,11 @@ export default function DashboardPage() {
                     playsInline
                     style={{ width: '100%', height: 'auto', display: 'block', backgroundColor: '#6cb4d4' }}
                   />
+                  <div style={{ backgroundColor: '#1e293b', padding: '12px', textAlign: 'center' }}>
+                    <a href="https://www.qrvending.co/" target="_blank" rel="noopener noreferrer" style={{ color: '#fff', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.95rem' }}>
+                      Visita www.qrvending.co <i className="fa-solid fa-arrow-up-right-from-square" style={{ fontSize: '0.85rem' }}></i>
+                    </a>
+                  </div>
                 </div>
                 
                 <h2>¡Bienvenido a la Polla Mundial 2026!</h2>
