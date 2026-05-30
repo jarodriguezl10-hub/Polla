@@ -1059,7 +1059,7 @@ export default function DashboardPage() {
     const diffMs = closeTime - currentTime;
 
     if (diffMs <= 0) {
-      return "Cerrado 🔒";
+      return "Bloqueado 🔒";
     }
 
     const diffSecs = Math.floor(diffMs / 1000);
@@ -1071,9 +1071,11 @@ export default function DashboardPage() {
       return `Cierra en ${diffDays} día${diffDays !== 1 ? 's' : ''}`;
     } else if (diffMs > 60 * 60 * 1000) {
       return `Cierra en ${diffHours} hora${diffHours !== 1 ? 's' : ''}`;
+    } else if (diffMs >= 60 * 1000) {
+      return `Cierra en ${diffMins} minuto${diffMins !== 1 ? 's' : ''}`;
     } else {
-      const displayMins = Math.max(1, diffMins);
-      return `Cierra en ${displayMins} minuto${displayMins !== 1 ? 's' : ''}`;
+      const displaySecs = String(Math.max(0, diffSecs)).padStart(2, '0');
+      return `Cierra en ${displaySecs} segundos`;
     }
   };
 
@@ -1614,7 +1616,7 @@ export default function DashboardPage() {
                     className={`segment-btn ${stateFilter === 'locked' ? 'active' : ''}`}
                     onClick={() => setStateFilter('locked')}
                   >
-                    Cerrados
+                    Bloqueados
                   </button>
                 </div>
               </div>
