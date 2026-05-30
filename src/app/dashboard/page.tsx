@@ -1280,7 +1280,10 @@ export default function DashboardPage() {
       <header className="glass-panel main-header">
         <div className="header-brand">
           <img src="/JD8048-FUTS_balon.jpg" alt="Balón" className="header-ball-logo" />
-          <h2>Polla Mundial 2026</h2>
+          <h2 style={{ whiteSpace: 'normal', lineHeight: 1.1, maxWidth: '160px' }}>
+            Polla Mundial <br/> 
+            2026 <span style={{ fontSize: '0.65rem', color: 'var(--color-primary)', fontWeight: 'bold', marginLeft: '4px' }}>v{process.env.NEXT_PUBLIC_APP_VERSION || '2.1'}</span>
+          </h2>
         </div>
 
         <div className="header-profile">
