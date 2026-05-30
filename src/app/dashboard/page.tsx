@@ -497,8 +497,8 @@ export default function DashboardPage() {
   const adjustScore = (matchId: string, side: 'A' | 'B', change: number) => {
     // Find current values
     const prediction = predictions.find((p) => p.match_id === matchId);
-    let scoreA = prediction ? prediction.score_a : 0;
-    let scoreB = prediction ? prediction.score_b : 0;
+    let scoreA = prediction && prediction.score_a !== null ? prediction.score_a : 0;
+    let scoreB = prediction && prediction.score_b !== null ? prediction.score_b : 0;
 
     if (side === 'A') {
       scoreA = Math.max(0, scoreA + change);
@@ -1724,13 +1724,13 @@ export default function DashboardPage() {
                             <>
                               <div className="score-spinner">
                                 <button className="spinner-btn" onClick={() => adjustScore(match.id, 'A', -1)}>-</button>
-                                <span className="score-val">{predA !== null ? predA : '0'}</span>
+                                <span className="score-val">{predA !== null ? predA : '-'}</span>
                                 <button className="spinner-btn" onClick={() => adjustScore(match.id, 'A', 1)}>+</button>
                               </div>
                               <span className="score-colon">:</span>
                               <div className="score-spinner">
                                 <button className="spinner-btn" onClick={() => adjustScore(match.id, 'B', -1)}>-</button>
-                                <span className="score-val">{predB !== null ? predB : '0'}</span>
+                                <span className="score-val">{predB !== null ? predB : '-'}</span>
                                 <button className="spinner-btn" onClick={() => adjustScore(match.id, 'B', 1)}>+</button>
                               </div>
                             </>
