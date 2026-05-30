@@ -41,20 +41,34 @@ export async function GET() {
       })
       .map((m: any) => m.id);
 
-    // Filter predictions to only include locked matches
-    const publicPredictions = predictions.filter((p: any) => lockedMatchIds.includes(p.match_id));
-
-    // Map user names
-    const mapped = publicPredictions.map((p: any) => {
-      const user = users.find((u: any) => u.id === p.user_id);
-      return {
-        matchId: p.match_id,
-        userName: user ? user.name : "Usuario",
-        scoreA: p.score_a,
-        scoreB: p.score_b,
-        pointsEarned: p.points_earned
-      };
+    // Sort users by leaderboard criteria
+    users.sort((a: any, b: any) => {
+      const pointsDiff = (b.points || 0) - (a.points || 0);
+      if (pointsDiff !== 0) return pointsDiff;
+      const diffDiff = (b.diff_matches || 0) - (a.diff_matches || 0);
+      if (diffDiff !== 0) return diffDiff;
+      const winnerDiff = (b.winner_matches || 0) - (a.winner_matches || 0);
+      if (winnerDiff !== 0) return winnerDiff;
+      const exactDiff = (b.exact_matches || 0) - (a.exact_matches || 0);
+      if (exactDiff !== 0) return exactDiff;
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateA - dateB;
     });
+
+    const mapped: any[] = [];
+    for (const matchId of lockedMatchIds) {
+      for (const user of users) {
+        const p = predictions.find((p: any) => p.user_id === user.id && p.match_id === matchId);
+        mapped.push({
+          matchId: matchId,
+          userName: user.name || "Usuario",
+          scoreA: p ? p.score_a : null,
+          scoreB: p ? p.score_b : null,
+          pointsEarned: p ? p.points_earned : null
+        });
+      }
+    }
 
     return NextResponse.json(mapped);
   } catch (error) {

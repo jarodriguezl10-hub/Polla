@@ -2698,7 +2698,7 @@ export default function DashboardPage() {
                         <tr key={i}>
                           <td><strong>{pred.userName}</strong></td>
                           <td className="text-center" style={{ fontWeight: 800, fontSize: '1.1rem', color: '#0f172a' }}>
-                            {pred.scoreA} : {pred.scoreB}
+                            {pred.scoreA !== null && pred.scoreB !== null ? `${pred.scoreA} : ${pred.scoreB}` : '- : -'}
                           </td>
                         </tr>
                       ))
