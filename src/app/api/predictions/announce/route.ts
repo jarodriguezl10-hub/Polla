@@ -64,22 +64,22 @@ export async function POST(request: Request) {
     }
 
     // 3. Format predictions (Admin only)
-    const ADMIN_EMAILS = ['jarodriguezl10@gmail.com', 'jrodriguezl10@gmail.com', 'mario.montalvo@gmail.com', 'cristhiancamilo@gmail.com'];
-    let adminUser = users.find(u => ADMIN_EMAILS.includes(u.email.toLowerCase()));
-    if (!adminUser) {
-      adminUser = users.find(u => u.role === 'admin');
-    }
+    const SUPER_ADMIN_EMAILS = ['jarodriguezl10@gmail.com', 'cristhiancamilo@gmail.com'];
+    const adminUsers = users.filter(u => SUPER_ADMIN_EMAILS.includes(u.email.toLowerCase()));
 
     let adminPredictionText = "";
-    if (adminUser) {
-      const pred = predictions.find(p => p.user_id === adminUser.id);
-      const scoreStr = pred ? `${pred.score_a} - ${pred.score_b}` : 'Sin pronóstico 🚫';
-      adminPredictionText = `👤 **Pronóstico del Administrador (${adminUser.name})**: ${scoreStr}\n📊 **Puntos antes del juego**: ${adminUser.points} pts`;
+    if (adminUsers.length > 0) {
+      const predTexts = adminUsers.map(admin => {
+        const pred = predictions.find(p => p.user_id === admin.id);
+        const scoreStr = pred ? `${pred.score_a} - ${pred.score_b}` : 'Sin pronóstico 🚫';
+        return `Administrador (${admin.name}): ${scoreStr}`;
+      });
+      adminPredictionText = `👤 **Pronóstico ${predTexts.join(', ')}**`;
     } else {
       adminPredictionText = `⚠️ No se encontró un usuario administrador registrado.`;
     }
 
-    const chatMsg = `🔒 **PARTIDO INICIADO** — ${match.team_a} vs ${match.team_b}\nEl partido está por comenzar (Bloqueado faltando 10 minutos).\n\n${adminPredictionText}\n\n[MatchID: ${match.id}]`;
+    const chatMsg = `🔒 **PARTIDO INICIADO** — ${match.team_a} vs ${match.team_b} El partido se ha bloqueado ${adminPredictionText}\n\n[MatchID: ${match.id}]`;
 
     // 4. Save to chat messages
     const timestamp = new Date().toISOString();
