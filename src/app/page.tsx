@@ -26,6 +26,31 @@ export default function LoginPage() {
     }
   }, [router]);
 
+  useEffect(() => {
+    if (step === 'otp' && typeof navigator !== 'undefined' && 'credentials' in navigator) {
+      const ac = new AbortController();
+      
+      try {
+        (navigator.credentials as any).get({
+          otp: { transport: ['email', 'sms'] },
+          signal: ac.signal
+        }).then((otp: any) => {
+          if (otp && otp.code) {
+            setCode(otp.code);
+          }
+        }).catch((err: any) => {
+          console.log('WebOTP error:', err);
+        });
+      } catch (e) {
+        // Ignore if API not fully supported
+      }
+
+      return () => {
+        ac.abort();
+      };
+    }
+  }, [step]);
+
   if (!mounted) {
     return null; // Prevents hydration mismatch on browser extensions/autofill attributes
   }
@@ -199,6 +224,7 @@ export default function LoginPage() {
                 </label>
                 <input
                   type="text"
+                  name="otp"
                   id="login-otp"
                   placeholder="000000"
                   maxLength={6}
