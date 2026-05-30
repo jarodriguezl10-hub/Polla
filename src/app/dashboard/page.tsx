@@ -1502,6 +1502,17 @@ export default function DashboardPage() {
 
             <div className="dashboard-layout">
               <div className="glass-panel dash-main-panel">
+                <div className="ad-video-container" style={{ marginBottom: '24px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                  <video 
+                    src="/videos/qr_vending.mp4" 
+                    autoPlay 
+                    muted 
+                    loop 
+                    playsInline
+                    style={{ width: '100%', height: 'auto', display: 'block', backgroundColor: '#6cb4d4' }}
+                  />
+                </div>
+                
                 <h2>¡Bienvenido a la Polla Mundial 2026!</h2>
                 <p>Prepara tus predicciones con precisión. El sistema bloqueará los partidos exactamente 10 minutos antes del pitazo inicial de forma automatizada. ¡Haz tus jugadas!</p>
                 
