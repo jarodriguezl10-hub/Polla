@@ -1601,7 +1601,7 @@ export default function DashboardPage() {
                               {hasPrediction ? "Editar" : "Pronosticar"}
                             </button>
                           )}
-                          {isLocked && !isPlayed && (
+                          {(isLocked || isPlayed) && (
                             <button 
                               className="btn btn-xs btn-secondary-outline" 
                               style={{ fontSize: '0.7rem', padding: '3px 8px', background: 'transparent', border: '1px solid var(--color-primary)', color: 'var(--color-primary)', borderRadius: '4px', cursor: 'pointer' }}
@@ -1777,6 +1777,9 @@ export default function DashboardPage() {
                             <>
                               <div className="real-results-box">Oficial: <strong>{match.score_a} - {match.score_b}</strong></div>
                               <div className="points-earned-tag">+{pred ? pred.points_earned : 0} pts</div>
+                              <button className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px' }} onClick={() => viewGroupPredictions(match.id)}>
+                                <i className="fa-solid fa-eye"></i> Ver resultados
+                              </button>
                             </>
                           ) : isLocked ? (
                             <button className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px' }} onClick={() => viewGroupPredictions(match.id)}>
