@@ -203,8 +203,11 @@ export default function LoginPage() {
                   placeholder="000000"
                   maxLength={6}
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                   disabled={loading}
+                  autoComplete="one-time-code"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   required
                 />
               </div>
