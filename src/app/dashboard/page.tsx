@@ -2434,7 +2434,7 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'start' }}>
               
               {/* Left Column Card - Control de Estado de Pagos */}
-              <div className="glass-panel" style={{ flex: '1 1 500px', padding: '24px', margin: 0 }}>
+              <div className="glass-panel" style={{ flex: '1 1 100%', minWidth: '280px', padding: '24px', margin: 0 }}>
                 <h3 style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <i className="fa-solid fa-credit-card" style={{ color: 'var(--color-fifa-blue)' }}></i> Control de Estado de Pagos
                 </h3>
@@ -2591,7 +2591,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Right Column Card - Registrar Pago Sin Conciliar */}
-              <div className="glass-panel" style={{ flex: '1 1 350px', padding: '24px', margin: 0 }}>
+              <div className="glass-panel" style={{ flex: '1 1 100%', minWidth: '280px', padding: '24px', margin: 0 }}>
                 <h3 style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <i className="fa-solid fa-circle-plus" style={{ color: '#ea580c' }}></i> Registrar Pago Sin Conciliar
                 </h3>
