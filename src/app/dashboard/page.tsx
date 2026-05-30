@@ -86,6 +86,9 @@ export default function DashboardPage() {
   const [modalMatch, setModalMatch] = useState<any | null>(null);
   const [modalPreds, setModalPreds] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [modalUser, setModalUser] = useState<any | null>(null);
+  const [modalUserPreds, setModalUserPreds] = useState<any[]>([]);
+  const [showUserModal, setShowUserModal] = useState(false);
 
   // Filter States
   const [predictionFilter, setPredictionFilter] = useState('all');
@@ -546,6 +549,46 @@ export default function DashboardPage() {
       }
     } catch (e) {
       showToast('Error al cargar pronósticos de grupo', 'error');
+    }
+  };
+
+  const viewUserPredictions = async (user: any) => {
+    setModalUser(user);
+    try {
+      const res = await fetch(`/api/predictions?userId=${user.id}`);
+      if (res.ok) {
+        const userPreds = await res.json();
+        
+        // Filter out matches that are not locked/played
+        const lockedOrPlayedMatches = matches.filter(m => {
+          const kickoff = new Date(m.kickoff_utc || m.date).getTime();
+          const diffMins = (kickoff - currentTime) / 60000;
+          return m.played || diffMins <= 10;
+        });
+        
+        const mappedPreds = lockedOrPlayedMatches.map(m => {
+          const p = userPreds.find((pred: any) => pred.match_id === m.id);
+          return {
+            match: m,
+            scoreA: p ? p.score_a : null,
+            scoreB: p ? p.score_b : null,
+            pointsEarned: p ? p.points_earned : null
+          };
+        });
+        
+        // Sort by match date descending (most recent first)
+        mappedPreds.sort((a, b) => {
+          const dateA = new Date(a.match.kickoff_utc || a.match.date).getTime();
+          const dateB = new Date(b.match.kickoff_utc || b.match.date).getTime();
+          return dateB - dateA;
+        });
+
+        setModalUserPreds(mappedPreds);
+        setShowUserModal(true);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('Error al cargar pronósticos del participante', 'error');
     }
   };
 
@@ -1826,7 +1869,7 @@ export default function DashboardPage() {
                       return (
                         <tr key={player.id} className={player.id === currentUser.id ? 'me-row' : ''}>
                           <td className="rank-col">{rankDisp}</td>
-                          <td>
+                          <td style={{ cursor: 'pointer', color: 'var(--color-primary)' }} onClick={() => viewUserPredictions(player)} title="Ver pronósticos de este participante">
                             <strong>{player.name}</strong> 
                             {player.id === currentUser.id && (
                               <span style={{ fontSize: '0.65rem', padding: '2px 4px', borderRadius: '4px', background: 'var(--color-primary)', color: 'white', marginLeft: '6px' }}>
@@ -2710,6 +2753,62 @@ export default function DashboardPage() {
                           <td><strong>{pred.userName}</strong></td>
                           <td className="text-center" style={{ fontWeight: 800, fontSize: '1.1rem', color: '#0f172a' }}>
                             {pred.scoreA !== null && pred.scoreB !== null ? `${pred.scoreA} : ${pred.scoreB}` : '- : -'}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP MODAL: USER PREDICTIONS */}
+      {showUserModal && modalUser && (
+        <div className="modal" onClick={() => setShowUserModal(false)}>
+          <div className="modal-content glass-panel" style={{ maxWidth: '600px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Pronósticos de {modalUser.name}</h3>
+              <button className="btn-close-modal" onClick={() => setShowUserModal(false)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+              <div className="predictions-list-container">
+                <table className="modal-predictions-table">
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left' }}>Partido</th>
+                      <th className="text-center">Pronóstico</th>
+                      <th className="text-right">Puntos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {modalUserPreds.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="text-center py-4" style={{ color: 'var(--color-text-muted)' }}>
+                          No hay partidos bloqueados ni finalizados aún.
+                        </td>
+                      </tr>
+                    ) : (
+                      modalUserPreds.map((item, i) => (
+                        <tr key={i}>
+                          <td style={{ textAlign: 'left' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                                {formatDateFriendly(item.match.kickoff_utc || item.match.date)}
+                                {item.match.played ? ' (Finalizado)' : ' (Bloqueado)'}
+                              </span>
+                              <strong>{item.match.team_a} vs {item.match.team_b}</strong>
+                            </div>
+                          </td>
+                          <td className="text-center" style={{ fontWeight: 800, fontSize: '1.1rem', color: '#0f172a' }}>
+                            {item.scoreA !== null && item.scoreB !== null ? `${item.scoreA} : ${item.scoreB}` : '- : -'}
+                          </td>
+                          <td className="text-right text-green" style={{ fontWeight: 800 }}>
+                            {item.match.played ? `+${item.pointsEarned || 0} pts` : '-'}
                           </td>
                         </tr>
                       ))
