@@ -1638,8 +1638,17 @@ export default function DashboardPage() {
                   const predB = pred ? pred.score_b : null;
                   const hasPrediction = pred && pred.score_a !== null && pred.score_b !== null;
 
+                  let cardClass = "";
+                  if (match.played) {
+                    cardClass = hasPrediction ? 'bg-pastel-green' : '';
+                  } else if (isLocked) {
+                    cardClass = 'bg-pastel-blue';
+                  } else if (hasPrediction) {
+                    cardClass = 'bg-pastel-green';
+                  }
+
                   return (
-                    <div id={`match-card-${match.id}`} key={match.id} className={`glass-panel match-card ${hasPrediction ? 'bg-pastel-green' : ''}`}>
+                    <div id={`match-card-${match.id}`} key={match.id} className={`glass-panel match-card ${cardClass}`}>
                       <div className="match-card-header">
                         <span className="match-phase">{match.group_name || match.group}</span>
                         <span>{formatDateFriendly(match.kickoff_utc || match.date)}</span>
@@ -1707,7 +1716,7 @@ export default function DashboardPage() {
                             </>
                           ) : isLocked ? (
                             <button className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px' }} onClick={() => viewGroupPredictions(match.id)}>
-                              <i className="fa-solid fa-eye"></i> Ver Grupo
+                              <i className="fa-solid fa-eye"></i> Ver resultados
                             </button>
                           ) : (
                             <>

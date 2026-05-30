@@ -573,6 +573,17 @@ body {
     border-color: #86efac !important;
     box-shadow: 0 8px 30px rgba(34, 197, 94, 0.15) !important;
 }
+.match-card.bg-pastel-blue {
+    background: #e0f2fe !important; /* Pastel blue card background */
+    border: 1.5px solid #bae6fd !important;
+}
+.match-card.bg-pastel-blue .match-card-header {
+    border-bottom: 1px solid #bae6fd !important;
+}
+.match-card.bg-pastel-blue:hover {
+    border-color: #7dd3fc !important;
+    box-shadow: 0 8px 30px rgba(56, 189, 248, 0.15) !important;
+}
 .match-card-header {
     display: flex;
     justify-content: space-between;
