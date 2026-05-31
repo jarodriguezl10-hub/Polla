@@ -1559,11 +1559,13 @@ export default function DashboardPage() {
                     const pred = predictions.find((p) => p.match_id === match.id);
                     const hasPrediction = pred && pred.score_a !== null && pred.score_b !== null;
                     
-                    let cardBgClass = "imminent-card bg-orange";
-                    if (isLocked) {
+                    let cardBgClass = "imminent-card";
+                    if (isPlayed) {
                       cardBgClass = "imminent-card bg-blue";
-                    } else if (hasPrediction) {
-                      cardBgClass = "imminent-card bg-green";
+                    } else if (isLocked) {
+                      cardBgClass = "imminent-card bg-yellow";
+                    } else if (!hasPrediction) {
+                      cardBgClass = "imminent-card bg-orange";
                     }
                     
                     return (
@@ -1612,7 +1614,7 @@ export default function DashboardPage() {
                               style={{ fontSize: '0.7rem', padding: '3px 8px', background: 'transparent', border: '1px solid var(--color-primary)', color: 'var(--color-primary)', borderRadius: '4px', cursor: 'pointer' }}
                               onClick={() => switchTab('tab-predictions', match.id)}
                             >
-                              {hasPrediction ? "Editar" : "Pronosticar"}
+                              {hasPrediction ? "Se guardó el pronóstico" : "Pronosticar"}
                             </button>
                           )}
                           {(isLocked || isPlayed) && (
@@ -1718,11 +1720,11 @@ export default function DashboardPage() {
 
                   let cardClass = "";
                   if (match.played) {
-                    cardClass = hasPrediction ? 'bg-pastel-green' : '';
-                  } else if (isLocked) {
                     cardClass = 'bg-pastel-blue';
-                  } else if (hasPrediction) {
-                    cardClass = 'bg-pastel-green';
+                  } else if (isLocked) {
+                    cardClass = 'bg-pastel-yellow';
+                  } else if (!hasPrediction) {
+                    cardClass = 'bg-pastel-orange';
                   }
 
                   return (
@@ -1784,7 +1786,7 @@ export default function DashboardPage() {
                           <span className="status-badge badge-locked"><i className="fa-solid fa-lock"></i> Bloqueado</span>
                         ) : (
                           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                            <span className="status-badge badge-open"><i className="fa-solid fa-unlock"></i> Abierto</span>
+                            <span className="status-badge badge-open"><i className="fa-solid fa-unlock"></i> {hasPrediction ? 'Abierto' : 'Pronosticar'}</span>
                             <span style={{ fontSize: '0.75rem', color: '#9a3412', backgroundColor: '#ffedd5', padding: '4px 8px', borderRadius: '6px', fontWeight: 600 }}>
                               {getCierraCountDownText(match.kickoff_utc || match.date)}
                             </span>
@@ -1824,7 +1826,7 @@ export default function DashboardPage() {
                                 </button>
                               )}
                               <span className="save-status-msg" style={{ display: predA !== null ? 'inline-flex' : 'none' }}>
-                                <i className="fa-solid fa-circle-check text-green"></i> Guardado
+                                <i className="fa-solid fa-circle-check text-green"></i> Se guardó el pronóstico
                               </span>
                             </>
                           )}

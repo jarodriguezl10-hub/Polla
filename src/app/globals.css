@@ -584,6 +584,28 @@ body {
     border-color: #7dd3fc !important;
     box-shadow: 0 8px 30px rgba(56, 189, 248, 0.15) !important;
 }
+.match-card.bg-pastel-yellow {
+    background: #fef08a !important; /* Pastel yellow */
+    border: 1.5px solid #fde047 !important;
+}
+.match-card.bg-pastel-yellow .match-card-header {
+    border-bottom: 1px solid #fde047 !important;
+}
+.match-card.bg-pastel-yellow:hover {
+    border-color: #facc15 !important;
+    box-shadow: 0 8px 30px rgba(234, 179, 8, 0.15) !important;
+}
+.match-card.bg-pastel-orange {
+    background: #ffedd5 !important; /* Pastel orange */
+    border: 1.5px solid #fed7aa !important;
+}
+.match-card.bg-pastel-orange .match-card-header {
+    border-bottom: 1px solid #fed7aa !important;
+}
+.match-card.bg-pastel-orange:hover {
+    border-color: #fb923c !important;
+    box-shadow: 0 8px 30px rgba(249, 115, 22, 0.15) !important;
+}
 .match-card-header {
     display: flex;
     justify-content: space-between;
@@ -2329,6 +2351,35 @@ body {
 }
 .imminent-card.bg-blue button:hover {
     background: #f0f9ff !important;
+}
+
+.imminent-card.bg-yellow {
+    background: #fef08a !important; /* pastel yellow */
+    border: 1px solid #fde047 !important;
+    color: #854d0e !important;
+    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.08) !important;
+}
+.imminent-card.bg-yellow .imminent-card-header {
+    border-bottom: 1px solid #fde047 !important;
+    color: #713f12 !important;
+}
+.imminent-card.bg-yellow .imminent-countdown {
+    background: #fde047 !important;
+    color: #713f12 !important;
+}
+.imminent-card.bg-yellow .imminent-score {
+    background: #fde047 !important;
+    color: #713f12 !important;
+}
+.imminent-card.bg-yellow .team-name-sm {
+    color: #713f12 !important;
+}
+.imminent-card.bg-yellow button {
+    border-color: #ca8a04 !important;
+    color: #ca8a04 !important;
+}
+.imminent-card.bg-yellow button:hover {
+    background: #fef08a !important;
 }
 
 .imminent-card-header {
