@@ -407,6 +407,15 @@ body {
 .tab-navigation::-webkit-scrollbar {
     display: none;
 }
+
+@media (min-width: 769px) {
+    .tab-navigation {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+}
 .tab-btn {
     font-family: var(--font-main);
     font-weight: 600;

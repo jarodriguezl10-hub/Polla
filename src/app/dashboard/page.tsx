@@ -1144,14 +1144,12 @@ export default function DashboardPage() {
     const pred = predictions.find((p) => p.match_id === m.id);
     const hasPrediction = pred && pred.score_a !== null && pred.score_b !== null;
 
-    if (predictionFilter === 'done' && !hasPrediction) return false;
-    if (predictionFilter === 'todo' && hasPrediction) return false;
-
     const kickoff = new Date(m.kickoff_utc || m.date).getTime();
     const diffMins = (kickoff - now) / (60 * 1000);
     const isLocked = diffMins <= 10;
 
     if (stateFilter === 'open' && (isLocked || m.played)) return false;
+    if (stateFilter === 'todo' && (hasPrediction || isLocked || m.played)) return false;
     if (stateFilter === 'locked' && !isLocked && !m.played) return false;
     return true;
   });
@@ -1206,7 +1204,7 @@ export default function DashboardPage() {
   };
 
   const getFlagUrl = (code: string) => {
-    if (!code || code === 'un') return null;
+    if (!code || code === 'un') return '/JD8048-FUTS_balon.jpg';
     return `https://flagcdn.com/w80/${code.toLowerCase()}.png`;
   };
 
@@ -1651,33 +1649,7 @@ export default function DashboardPage() {
             {/* Filters panel */}
             <div className="glass-panel predictions-filters">
               <div className="filter-group">
-                <span className="filter-label"><i className="fa-solid fa-pen-to-square"></i> Pronóstico:</span>
-                <div className="segmented-control">
-                  <button 
-                    type="button"
-                    className={`segment-btn ${predictionFilter === 'all' ? 'active' : ''}`}
-                    onClick={() => setPredictionFilter('all')}
-                  >
-                    Todos
-                  </button>
-                  <button 
-                    type="button"
-                    className={`segment-btn ${predictionFilter === 'done' ? 'active' : ''}`}
-                    onClick={() => setPredictionFilter('done')}
-                  >
-                    Realizado
-                  </button>
-                  <button 
-                    type="button"
-                    className={`segment-btn ${predictionFilter === 'todo' ? 'active' : ''}`}
-                    onClick={() => setPredictionFilter('todo')}
-                  >
-                    Por hacer
-                  </button>
-                </div>
-              </div>
-              <div className="filter-group">
-                <span className="filter-label"><i className="fa-solid fa-lock-open"></i> Estado:</span>
+                <span className="filter-label"><i className="fa-solid fa-filter"></i> Filtro:</span>
                 <div className="segmented-control">
                   <button 
                     type="button"
@@ -1692,6 +1664,13 @@ export default function DashboardPage() {
                     onClick={() => setStateFilter('open')}
                   >
                     Abiertos
+                  </button>
+                  <button 
+                    type="button"
+                    className={`segment-btn ${stateFilter === 'todo' ? 'active' : ''}`}
+                    onClick={() => setStateFilter('todo')}
+                  >
+                    Sin pronosticar
                   </button>
                   <button 
                     type="button"
@@ -1774,7 +1753,7 @@ export default function DashboardPage() {
                             )}
                           </div>
                           {match.played && (
-                            <div style={{ fontSize: '0.7rem', color: '#475569', background: '#e2e8f0', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                            <div style={{ fontSize: '0.85rem', color: '#475569', background: '#e2e8f0', padding: '4px 10px', borderRadius: '4px', fontWeight: 600 }}>
                               Oficial: {match.score_a} - {match.score_b}
                             </div>
                           )}
