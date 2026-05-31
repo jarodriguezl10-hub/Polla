@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase } from '@/lib/supabaseClient';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     let users: any[] = [];
