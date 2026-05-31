@@ -67,26 +67,30 @@ export async function POST(request: Request) {
     const SUPER_ADMIN_EMAILS = ['jarodriguezl10@gmail.com', 'cristhiancamilo@gmail.com'];
     const adminUsers = users.filter(u => SUPER_ADMIN_EMAILS.includes(u.email.toLowerCase()));
 
-    let adminPredictionText = "";
+    let alejandroPredictionText = "";
     if (adminUsers.length > 0) {
-      const predTexts = adminUsers.map(admin => {
-        const pred = predictions.find(p => p.user_id === admin.id);
+      // Find Alejandro by name or emails
+      const alejandro = adminUsers.find(u => 
+        (u.name && u.name.toLowerCase().includes('alejandro rodriguez')) || 
+        u.email === 'jarodriguezl10@gmail.com' || 
+        u.email === 'jrodriguezl10@gmail.com'
+      );
+      
+      if (alejandro) {
+        const pred = predictions.find(p => p.user_id === alejandro.id);
         const scoreStr = pred ? `${pred.score_a} - ${pred.score_b}` : 'Sin pronóstico 🚫';
-        return `Administrador (${admin.name}): ${scoreStr}`;
-      });
-      adminPredictionText = `👤 **Pronóstico ${predTexts.join(', ')}**`;
-    } else {
-      adminPredictionText = `⚠️ No se encontró un usuario administrador registrado.`;
+        alejandroPredictionText = `👤 **Pronóstico Alejandro Rodriguez:** ${scoreStr}`;
+      }
     }
 
-    const chatMsg = `🔒 **PARTIDO INICIADO** — ${match.team_a} vs ${match.team_b} El partido se ha bloqueado ${adminPredictionText}\n\n[MatchID: ${match.id}]`;
+    const chatMsg = `🔒 **PARTIDO INICIADO** — ${match.team_a} vs ${match.team_b} El partido se ha bloqueado. ${alejandroPredictionText}`.trim();
 
     // 4. Save to chat messages
     const timestamp = new Date().toISOString();
     if (isRealSupabase) {
       await supabase.from('chat_messages').insert({
         user_id: null,
-        user_name: '🤖 Sistema Polla',
+        user_name: '🤖 Notificación automática',
         text: chatMsg,
         created_at: timestamp
       });
@@ -99,7 +103,7 @@ export async function POST(request: Request) {
         const newMessage = {
           id: `msg_sys_${Date.now()}`,
           user_id: null,
-          user_name: '🤖 Sistema Polla',
+          user_name: '🤖 Notificación automática',
           text: chatMsg,
           created_at: timestamp
         };

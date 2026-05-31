@@ -100,6 +100,7 @@ export default function DashboardPage() {
   const [adminLoading, setAdminLoading] = useState<{ [key: string]: boolean }>({});
   const [adminSearch, setAdminSearch] = useState('');
   const [adminPhaseFilter, setAdminPhaseFilter] = useState('all');
+  const [adminMatchStateFilter, setAdminMatchStateFilter] = useState('all');
 
   // Admin payment states
   const [selectedUnpaidUserId, setSelectedUnpaidUserId] = useState('');
@@ -332,7 +333,12 @@ export default function DashboardPage() {
     window.location.href = '/';
   };
 
-  const scrollToChatBottom = () => {
+  const scrollToChatBottom = (force = false) => {
+    const chatBody = document.querySelector('.chat-body');
+    if (!force && chatBody) {
+      const isScrolledToBottom = chatBody.scrollHeight - chatBody.scrollTop <= chatBody.clientHeight + 150;
+      if (!isScrolledToBottom) return;
+    }
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -622,7 +628,8 @@ export default function DashboardPage() {
         // If Ethereal/Mock client is active, we immediately append it locally since realtime trigger is simulated
         if (!isRealSupabase) {
           setChatMessages((prev) => [...prev, data.message]);
-          setTimeout(scrollToChatBottom, 100);
+          setChatInput('');
+          setTimeout(() => scrollToChatBottom(true), 100);
         }
       } else {
         showToast('Error al enviar el mensaje', 'error');
@@ -656,7 +663,7 @@ export default function DashboardPage() {
     }
     const lastAtIndex = chatInput.lastIndexOf('@');
     const prefix = chatInput.slice(0, lastAtIndex);
-    setChatInput(`${prefix}@${user.name} `);
+    setChatInput(prefix);
     setShowMentionList(false);
   };
 
@@ -1166,6 +1173,13 @@ export default function DashboardPage() {
     if (adminPhaseFilter === 'PRUEBA') {
       return matchesSearch && match.phase === 'PRUEBA';
     }
+    
+    // Check match state
+    if (matchesSearch) {
+      if (adminMatchStateFilter === 'pending' && match.played) return false;
+      if (adminMatchStateFilter === 'finalized' && !match.played) return false;
+    }
+
     return matchesSearch;
   });
 
@@ -1264,7 +1278,7 @@ export default function DashboardPage() {
   const pendientesCount = leaderboard.filter(u => !u.paid).length;
   const sinConciliarCount = unconciliatedPayments.filter(p => !p.conciliated).length;
   const conciliadoCount = unconciliatedPayments.filter(p => p.conciliated).length;
-  const totalRecaudoVal = (pagadasCount * 100000) + (sinConciliarCount * 100000) + (conciliadoCount * 100000);
+  const totalRecaudoVal = (pagadasCount * 100000) + (sinConciliarCount * 100000);
   const totalRecaudoStr = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(totalRecaudoVal);
   const totalPersonas = pagadasCount + pendientesCount;
 
@@ -1607,7 +1621,7 @@ export default function DashboardPage() {
                               style={{ fontSize: '0.7rem', padding: '3px 8px', background: 'transparent', border: '1px solid var(--color-primary)', color: 'var(--color-primary)', borderRadius: '4px', cursor: 'pointer' }}
                               onClick={() => viewGroupPredictions(match.id)}
                             >
-                              <i className="fa-solid fa-eye"></i> Ver resultados
+                              <i className="fa-solid fa-eye"></i> Ver pronóstico
                             </button>
                           )}
                         </div>
@@ -1778,7 +1792,7 @@ export default function DashboardPage() {
                               <div className="real-results-box">Oficial: <strong>{match.score_a} - {match.score_b}</strong></div>
                               <div className="points-earned-tag">+{pred ? pred.points_earned : 0} pts</div>
                               <button className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px' }} onClick={() => viewGroupPredictions(match.id)}>
-                                <i className="fa-solid fa-eye"></i> Ver resultados
+                                <i className="fa-solid fa-eye"></i> Ver pronóstico
                               </button>
                             </>
                           ) : isLocked ? (
@@ -2072,6 +2086,16 @@ export default function DashboardPage() {
                     />
                     <select 
                       className="admin-filter-select"
+                      style={{ maxWidth: '140px', marginLeft: '8px' }}
+                      value={adminMatchStateFilter}
+                      onChange={(e) => setAdminMatchStateFilter(e.target.value)}
+                    >
+                      <option value="all">Todos</option>
+                      <option value="pending">Pendientes</option>
+                      <option value="finalized">Finalizados</option>
+                    </select>
+                    <select 
+                      className="admin-filter-select"
                       style={{ maxWidth: '180px' }}
                       value={adminPhaseFilter}
                       onChange={(e) => setAdminPhaseFilter(e.target.value)}
@@ -2093,8 +2117,17 @@ export default function DashboardPage() {
                     const currentA = adminTeams[match.id]?.teamA || match.team_a;
                     const currentB = adminTeams[match.id]?.teamB || match.team_b;
 
+                    const now = new Date().getTime();
+                    const kickoff = match.kickoff_utc ? new Date(match.kickoff_utc).getTime() : new Date(match.date).getTime();
+                    const diffMins = (kickoff - now) / (60 * 1000);
+                    const isLocked = diffMins <= 10;
+
+                    let bgColor = '';
+                    if (match.played) bgColor = 'rgba(56, 189, 248, 0.15)';
+                    else if (isLocked) bgColor = 'rgba(251, 146, 60, 0.15)';
+
                     return (
-                      <div key={match.id} className="admin-match-row" style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'stretch' }}>
+                      <div key={match.id} className="admin-match-row" style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'stretch', backgroundColor: bgColor || undefined }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                           <span className="badge" style={{ background: '#e2e8f0', color: '#475569', fontWeight: 600 }}>{match.id}</span>
                           <strong style={{ fontSize: '0.95rem' }}>{match.group_name || match.group}</strong>
@@ -2736,7 +2769,7 @@ export default function DashboardPage() {
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
               <div className="match-info-banner">
                 <div className="match-card-compact">
                   <div className="team-block" style={{ flexDirection: 'row', gap: '6px' }}>
