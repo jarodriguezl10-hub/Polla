@@ -1586,11 +1586,16 @@ export default function DashboardPage() {
                             <span className="team-name-sm">{match.team_a}</span>
                           </div>
                           
-                          <div className="imminent-score">
+                          <div className="imminent-score" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                             {hasPrediction ? (
                               <span className="score-text">{pred.score_a} - {pred.score_b}</span>
                             ) : (
                               <span className="score-text">- : -</span>
+                            )}
+                            {isPlayed && (
+                              <div style={{ fontSize: '0.65rem', color: '#475569', background: '#e2e8f0', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                                Oficial: {match.score_a} - {match.score_b}
+                              </div>
                             )}
                           </div>
                           
@@ -1606,7 +1611,6 @@ export default function DashboardPage() {
                         <div className="imminent-card-footer">
                           <span className="match-date-sm">
                             {formatDateFriendly(match.kickoff_utc || match.date)}
-                            {isPlayed && ` (Oficial: ${match.score_a} - ${match.score_b})`}
                           </span>
                           {!isPlayed && !isLocked && (
                             <button 
@@ -1745,27 +1749,34 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Prediction inputs */}
-                        <div className="score-inputs">
-                          {match.played || isLocked ? (
-                            <div className="score-locked-display">
-                              <span className="locked-score">{predA !== null ? predA : '-'}</span>
-                              <span className="score-slash">:</span>
-                              <span className="locked-score">{predB !== null ? predB : '-'}</span>
+                        <div className="score-inputs" style={{ flexDirection: 'column', gap: '6px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            {match.played || isLocked ? (
+                              <div className="score-locked-display">
+                                <span className="locked-score">{predA !== null ? predA : '-'}</span>
+                                <span className="score-slash">:</span>
+                                <span className="locked-score">{predB !== null ? predB : '-'}</span>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="score-spinner">
+                                  <button className="spinner-btn" onClick={() => adjustScore(match.id, 'A', -1)}>-</button>
+                                  <span className="score-val">{predA !== null ? predA : '-'}</span>
+                                  <button className="spinner-btn" onClick={() => adjustScore(match.id, 'A', 1)}>+</button>
+                                </div>
+                                <span className="score-colon">:</span>
+                                <div className="score-spinner">
+                                  <button className="spinner-btn" onClick={() => adjustScore(match.id, 'B', -1)}>-</button>
+                                  <span className="score-val">{predB !== null ? predB : '-'}</span>
+                                  <button className="spinner-btn" onClick={() => adjustScore(match.id, 'B', 1)}>+</button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          {match.played && (
+                            <div style={{ fontSize: '0.7rem', color: '#475569', background: '#e2e8f0', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                              Oficial: {match.score_a} - {match.score_b}
                             </div>
-                          ) : (
-                            <>
-                              <div className="score-spinner">
-                                <button className="spinner-btn" onClick={() => adjustScore(match.id, 'A', -1)}>-</button>
-                                <span className="score-val">{predA !== null ? predA : '-'}</span>
-                                <button className="spinner-btn" onClick={() => adjustScore(match.id, 'A', 1)}>+</button>
-                              </div>
-                              <span className="score-colon">:</span>
-                              <div className="score-spinner">
-                                <button className="spinner-btn" onClick={() => adjustScore(match.id, 'B', -1)}>-</button>
-                                <span className="score-val">{predB !== null ? predB : '-'}</span>
-                                <button className="spinner-btn" onClick={() => adjustScore(match.id, 'B', 1)}>+</button>
-                              </div>
-                            </>
                           )}
                         </div>
 
@@ -1796,7 +1807,6 @@ export default function DashboardPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           {match.played ? (
                             <>
-                              <div className="real-results-box">Oficial: <strong>{match.score_a} - {match.score_b}</strong></div>
                               <div className="points-earned-tag">+{pred ? pred.points_earned : 0} pts</div>
                               <button className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px' }} onClick={() => viewGroupPredictions(match.id)}>
                                 <i className="fa-solid fa-eye"></i> Ver pronóstico
