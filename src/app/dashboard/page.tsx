@@ -1783,7 +1783,12 @@ export default function DashboardPage() {
                         ) : isLocked ? (
                           <span className="status-badge badge-locked"><i className="fa-solid fa-lock"></i> Bloqueado</span>
                         ) : (
-                          <span className="status-badge badge-open"><i className="fa-solid fa-unlock"></i> Abierto</span>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <span className="status-badge badge-open"><i className="fa-solid fa-unlock"></i> Abierto</span>
+                            <span style={{ fontSize: '0.75rem', color: '#9a3412', backgroundColor: '#ffedd5', padding: '4px 8px', borderRadius: '6px', fontWeight: 600 }}>
+                              {getCierraCountDownText(match.kickoff_utc || match.date)}
+                            </span>
+                          </div>
                         )}
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
