@@ -38,15 +38,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Partido no encontrado" }, { status: 404 });
     }
 
-    // 2. Check if already announced using team names
+    // 2. Check if already announced using MatchID
     let alreadyAnnounced = false;
-    const matchSignature = `🔒 **PARTIDO INICIADO** — ${match.team_a} vs ${match.team_b}`;
     
     if (isRealSupabase) {
       const { data } = await supabase
         .from('chat_messages')
         .select('id')
-        .like('text', `${matchSignature}%`)
+        .like('text', `%[MatchID: ${matchId}]%`)
         .limit(1);
       alreadyAnnounced = data && data.length > 0;
     } else {
@@ -56,7 +55,7 @@ export async function POST(request: Request) {
       if (fs.existsSync(DB_PATH)) {
         const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
         alreadyAnnounced = (db.chat_messages || []).some((msg: any) => 
-          msg.text.includes(matchSignature)
+          msg.text.includes(`[MatchID: ${matchId}]`)
         );
       }
     }
@@ -85,7 +84,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const chatMsg = `🔒 **PARTIDO INICIADO** — ${match.team_a} vs ${match.team_b} El partido se ha bloqueado. ${alejandroPredictionText}`.trim();
+    const chatMsg = `🔒 **PARTIDO INICIADO** — ${match.team_a} vs ${match.team_b} El partido se ha bloqueado. ${alejandroPredictionText} [MatchID: ${match.id}]`.trim();
 
     // 4. Save to chat messages
     const timestamp = new Date().toISOString();

@@ -2965,7 +2965,7 @@ export default function DashboardPage() {
                   <div key={msg.id} className={`chat-msg ${isMe ? 'chat-msg-me' : 'chat-msg-other'} ${msg.recipient_ids ? 'chat-msg-private' : ''}`}>
                     {!isMe && <span className="chat-msg-user">{msg.user_name} {msg.recipient_ids && <span className="private-tag"><i className="fa-solid fa-lock" style={{ fontSize: '0.6rem' }}></i> Privado</span>}</span>}
                     {isMe && msg.recipient_ids && <div className="chat-msg-user-private" style={{ marginBottom: '4px' }}><span className="private-tag"><i className="fa-solid fa-lock" style={{ fontSize: '0.6rem' }}></i> Privado</span></div>}
-                    <span>{msg.text}</span>
+                    <span>{msg.text.replace(/\[MatchID: .*?\]/g, '').trim()}</span>
                     <span className="chat-msg-time">{timeDisp}</span>
                   </div>
                 );
