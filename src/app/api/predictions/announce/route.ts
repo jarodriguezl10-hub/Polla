@@ -8,32 +8,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Falta el matchId" }, { status: 400 });
     }
 
-    // 1. Check if already announced
-    let alreadyAnnounced = false;
-    if (isRealSupabase) {
-      const { data } = await supabase
-        .from('chat_messages')
-        .select('id')
-        .like('text', `%[MatchID: ${matchId}]%`)
-        .limit(1);
-      alreadyAnnounced = data && data.length > 0;
-    } else {
-      const fs = require('fs');
-      const path = require('path');
-      const DB_PATH = path.join(process.cwd(), 'database.json');
-      if (fs.existsSync(DB_PATH)) {
-        const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-        alreadyAnnounced = (db.chat_messages || []).some((msg: any) => 
-          msg.text.includes(`[MatchID: ${matchId}]`)
-        );
-      }
-    }
-
-    if (alreadyAnnounced) {
-      return NextResponse.json({ success: true, alreadyAnnounced: true });
-    }
-
-    // 2. Fetch match details
+    // 1. Fetch match details first
     let match: any = null;
     let predictions: any[] = [];
     let users: any[] = [];
@@ -61,6 +36,33 @@ export async function POST(request: Request) {
 
     if (!match) {
       return NextResponse.json({ error: "Partido no encontrado" }, { status: 404 });
+    }
+
+    // 2. Check if already announced using team names
+    let alreadyAnnounced = false;
+    const matchSignature = `🔒 **PARTIDO INICIADO** — ${match.team_a} vs ${match.team_b}`;
+    
+    if (isRealSupabase) {
+      const { data } = await supabase
+        .from('chat_messages')
+        .select('id')
+        .like('text', `${matchSignature}%`)
+        .limit(1);
+      alreadyAnnounced = data && data.length > 0;
+    } else {
+      const fs = require('fs');
+      const path = require('path');
+      const DB_PATH = path.join(process.cwd(), 'database.json');
+      if (fs.existsSync(DB_PATH)) {
+        const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+        alreadyAnnounced = (db.chat_messages || []).some((msg: any) => 
+          msg.text.includes(matchSignature)
+        );
+      }
+    }
+
+    if (alreadyAnnounced) {
+      return NextResponse.json({ success: true, alreadyAnnounced: true });
     }
 
     // 3. Format predictions (Admin only)
