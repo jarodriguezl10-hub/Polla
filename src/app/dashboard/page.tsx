@@ -2980,7 +2980,7 @@ export default function DashboardPage() {
 
                 let renderText = msg.text.replace(/\[MatchID: .*?\]/g, '').trim();
                 let replyObj = null;
-                const replyMatch = renderText.match(/^\[REPLY:(.*?)\|(.*?)\]\s?(.*)$/s);
+                const replyMatch = renderText.match(/^\[REPLY:(.*?)\|(.*?)\]\s?([\s\S]*)$/);
                 if (replyMatch) {
                   replyObj = { user: replyMatch[1], text: replyMatch[2] };
                   renderText = replyMatch[3];
