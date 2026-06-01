@@ -74,6 +74,7 @@ export default function DashboardPage() {
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatInnerTab, setChatInnerTab] = useState<'chat' | 'notifications'>('chat');
+  const [replyTo, setReplyTo] = useState<any>(null);
 
   // Unread chat messages count
   const [unreadCount, setUnreadCount] = useState(0);
@@ -335,7 +336,7 @@ export default function DashboardPage() {
   };
 
   const scrollToChatBottom = (force = false) => {
-    const chatBody = document.querySelector('.chat-body');
+    const chatBody = document.querySelector('.floating-chat-messages');
     if (!force && chatBody) {
       const isScrolledToBottom = chatBody.scrollHeight - chatBody.scrollTop <= chatBody.clientHeight + 150;
       if (!isScrolledToBottom) return;
@@ -604,13 +605,19 @@ export default function DashboardPage() {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
-    const text = chatInput;
+    let text = chatInput;
+    if (replyTo) {
+      const safeReplyText = replyTo.text.replace(/\[MatchID: .*?\]/g, '').replace(/\|/g, '').replace(/\[REPLY:.*?\]\s?/g, '').substring(0, 50).trim();
+      text = `[REPLY:${replyTo.user_name}|${safeReplyText}] ${text}`;
+    }
+
     const recipientIds = selectedRecipients.length > 0 
       ? selectedRecipients.map(r => r.id).join(',') 
       : null;
 
     setChatInput('');
     setSelectedRecipients([]);
+    setReplyTo(null);
 
     try {
       const res = await fetch('/api/chat', {
@@ -2961,11 +2968,37 @@ export default function DashboardPage() {
                 const date = new Date(msg.created_at);
                 const timeDisp = `${date.getHours()}:${(date.getMinutes() < 10 ? '0' : '') + date.getMinutes()}`;
 
+                let renderText = msg.text.replace(/\[MatchID: .*?\]/g, '').trim();
+                let replyObj = null;
+                const replyMatch = renderText.match(/^\[REPLY:(.*?)\|(.*?)\]\s?(.*)$/s);
+                if (replyMatch) {
+                  replyObj = { user: replyMatch[1], text: replyMatch[2] };
+                  renderText = replyMatch[3];
+                }
+
                 return (
                   <div key={msg.id} className={`chat-msg ${isMe ? 'chat-msg-me' : 'chat-msg-other'} ${msg.recipient_ids ? 'chat-msg-private' : ''}`}>
-                    {!isMe && <span className="chat-msg-user">{msg.user_name} {msg.recipient_ids && <span className="private-tag"><i className="fa-solid fa-lock" style={{ fontSize: '0.6rem' }}></i> Privado</span>}</span>}
-                    {isMe && msg.recipient_ids && <div className="chat-msg-user-private" style={{ marginBottom: '4px' }}><span className="private-tag"><i className="fa-solid fa-lock" style={{ fontSize: '0.6rem' }}></i> Privado</span></div>}
-                    <span>{msg.text.replace(/\[MatchID: .*?\]/g, '').trim()}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <div style={{ flex: 1 }}>
+                        {!isMe && <span className="chat-msg-user">{msg.user_name} {msg.recipient_ids && <span className="private-tag"><i className="fa-solid fa-lock" style={{ fontSize: '0.6rem' }}></i> Privado</span>}</span>}
+                        {isMe && msg.recipient_ids && <div className="chat-msg-user-private"><span className="private-tag"><i className="fa-solid fa-lock" style={{ fontSize: '0.6rem' }}></i> Privado</span></div>}
+                      </div>
+                      <button 
+                        onClick={() => setReplyTo(msg)}
+                        style={{ background: 'transparent', border: 'none', color: isMe ? 'rgba(255,255,255,0.7)' : 'var(--color-text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}
+                        title="Responder"
+                      >
+                        <i className="fa-solid fa-reply"></i>
+                      </button>
+                    </div>
+
+                    {replyObj && (
+                      <div style={{ background: isMe ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)', borderLeft: `3px solid ${isMe ? 'white' : 'var(--color-primary)'}`, padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', marginBottom: '6px', opacity: 0.9 }}>
+                        <strong style={{ display: 'block', fontSize: '0.7rem' }}>{replyObj.user}</strong>
+                        <span style={{ fontStyle: 'italic' }}>{replyObj.text}...</span>
+                      </div>
+                    )}
+                    <span>{renderText}</span>
                     <span className="chat-msg-time">{timeDisp}</span>
                   </div>
                 );
@@ -2976,6 +3009,19 @@ export default function DashboardPage() {
 
           {chatInnerTab === 'chat' && (
             <form onSubmit={handleSendChat} className="floating-chat-input-bar" style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
+              {replyTo && (
+                <div style={{ padding: '8px 12px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}><i className="fa-solid fa-reply"></i> Respondiendo a {replyTo.user_name}</span>
+                    <div style={{ fontStyle: 'italic', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
+                      {replyTo.text.replace(/\[MatchID: .*?\]/g, '').replace(/\[REPLY:.*?\]\s?/g, '')}
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setReplyTo(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
+                    <i className="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              )}
               {selectedRecipients.length > 0 && (
                 <div className="chat-selected-recipients" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '6px 12px', background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}>Para:</span>
