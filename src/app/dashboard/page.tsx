@@ -1166,9 +1166,9 @@ export default function DashboardPage() {
     const diffMins = (kickoff - now) / (60 * 1000);
     const isLocked = diffMins <= 10;
 
-    if (stateFilter === 'open' && (!hasPrediction || isLocked || m.played)) return false;
-    if (stateFilter === 'todo' && (hasPrediction || isLocked || m.played)) return false;
+    if (stateFilter === 'open' && (isLocked || m.played)) return false;
     if (stateFilter === 'locked' && (!isLocked || m.played)) return false;
+    if (stateFilter === 'finished' && (!m.played)) return false;
     return true;
   });
 
@@ -1678,13 +1678,6 @@ export default function DashboardPage() {
                   </button>
                   <button 
                     type="button"
-                    className={`segment-btn ${stateFilter === 'todo' ? 'active' : ''}`}
-                    onClick={() => setStateFilter('todo')}
-                  >
-                    Sin pronosticar
-                  </button>
-                  <button 
-                    type="button"
                     className={`segment-btn ${stateFilter === 'open' ? 'active' : ''}`}
                     onClick={() => setStateFilter('open')}
                   >
@@ -1696,6 +1689,13 @@ export default function DashboardPage() {
                     onClick={() => setStateFilter('locked')}
                   >
                     Bloqueados
+                  </button>
+                  <button 
+                    type="button"
+                    className={`segment-btn ${stateFilter === 'finished' ? 'active' : ''}`}
+                    onClick={() => setStateFilter('finished')}
+                  >
+                    Finalizados
                   </button>
                 </div>
               </div>
@@ -2770,7 +2770,7 @@ export default function DashboardPage() {
 
       {/* CREDIT FOOTER */}
       <footer className="app-footer">
-        <p>Versión 1.0.0 | Creador: Alejandro Rodriguez</p>
+        <p>Version 1.2 | Creador : Alejandro Rodriguez</p>
       </footer>
 
       {/* POPUP MODAL: GROUP PREDICTIONS (FAIR PLAY DISPLAY) */}

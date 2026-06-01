@@ -287,7 +287,7 @@ export default function LoginPage() {
           )}
 
           <footer className="login-footer">
-            <p>Versión 1.0.0 | Creador: Alejandro Rodriguez</p>
+            <p>Version 1.2 | Creador : Alejandro Rodriguez</p>
           </footer>
         </div>
       </div>
