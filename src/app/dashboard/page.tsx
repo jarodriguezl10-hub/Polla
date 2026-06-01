@@ -73,6 +73,7 @@ export default function DashboardPage() {
   const [scrollMatchId, setScrollMatchId] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
+  const [chatInnerTab, setChatInnerTab] = useState<'chat' | 'notifications'>('chat');
 
   // Unread chat messages count
   const [unreadCount, setUnreadCount] = useState(0);
@@ -2912,23 +2913,50 @@ export default function DashboardPage() {
       {/* FLOATING CHAT WINDOW */}
       {showFloatingChat && (
         <div className="floating-chat-window glass-panel animate-fade-in">
-          <div className="floating-chat-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <i className="fa-solid fa-comments text-green"></i>
-              <h3>Chat de la Polla</h3>
+          <div className="floating-chat-header" style={{ display: 'flex', flexDirection: 'column', padding: '12px 16px 0 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <i className="fa-solid fa-comments text-green"></i>
+                <h3 style={{ margin: 0 }}>Chat</h3>
+              </div>
+              <button className="btn-close-chat" onClick={() => setShowFloatingChat(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--color-text-muted)' }}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
             </div>
-            <button className="btn-close-chat" onClick={() => setShowFloatingChat(false)}>
-              <i className="fa-solid fa-xmark"></i>
-            </button>
+            
+            <div className="segmented-control" style={{ width: '100%', marginBottom: '0', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, borderBottom: 'none' }}>
+              <button 
+                type="button"
+                className={`segment-btn ${chatInnerTab === 'chat' ? 'active' : ''}`}
+                onClick={() => setChatInnerTab('chat')}
+                style={{ flex: 1, padding: '8px', fontSize: '0.8rem' }}
+              >
+                Chat de la Polla
+              </button>
+              <button 
+                type="button"
+                className={`segment-btn ${chatInnerTab === 'notifications' ? 'active' : ''}`}
+                onClick={() => setChatInnerTab('notifications')}
+                style={{ flex: 1, padding: '8px', fontSize: '0.8rem' }}
+              >
+                Notificaciones
+              </button>
+            </div>
           </div>
 
           <div className="floating-chat-messages">
-            {chatMessages.length === 0 ? (
-              <p style={{ color: 'var(--color-text-muted)', textAlign: 'center', margin: 'auto', padding: '20px' }}>
-                No hay mensajes. ¡Sé el primero!
-              </p>
-            ) : (
-              chatMessages.map((msg) => {
+            {(() => {
+              const filteredChat = chatMessages.filter(m => chatInnerTab === 'notifications' ? m.user_name === '🤖 Notificación automática' : m.user_name !== '🤖 Notificación automática');
+              
+              if (filteredChat.length === 0) {
+                return (
+                  <p style={{ color: 'var(--color-text-muted)', textAlign: 'center', margin: 'auto', padding: '20px' }}>
+                    No hay mensajes en esta sección.
+                  </p>
+                );
+              }
+
+              return filteredChat.map((msg) => {
                 const isMe = msg.user_id === currentUser.id;
                 const date = new Date(msg.created_at);
                 const timeDisp = `${date.getHours()}:${(date.getMinutes() < 10 ? '0' : '') + date.getMinutes()}`;
@@ -2941,60 +2969,62 @@ export default function DashboardPage() {
                     <span className="chat-msg-time">{timeDisp}</span>
                   </div>
                 );
-              })
-            )}
+              });
+            })()}
             <div ref={chatBottomRef}></div>
           </div>
 
-          <form onSubmit={handleSendChat} className="floating-chat-input-bar" style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
-            {selectedRecipients.length > 0 && (
-              <div className="chat-selected-recipients" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '6px 12px', background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}>Para:</span>
-                {selectedRecipients.map((user) => (
-                  <span key={user.id} className="recipient-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(16,185,129,0.1)', color: 'var(--color-primary)', fontSize: '0.75rem', fontWeight: 600, padding: '2px 8px', borderRadius: '12px' }}>
-                    @{user.name}
-                    <button 
-                      type="button" 
-                      className="btn-remove-recipient" 
-                      style={{ border: 'none', background: 'transparent', color: 'red', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', padding: '0 2px' }}
-                      onClick={() => setSelectedRecipients(selectedRecipients.filter(r => r.id !== user.id))}
+          {chatInnerTab === 'chat' && (
+            <form onSubmit={handleSendChat} className="floating-chat-input-bar" style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
+              {selectedRecipients.length > 0 && (
+                <div className="chat-selected-recipients" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '6px 12px', background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}>Para:</span>
+                  {selectedRecipients.map((user) => (
+                    <span key={user.id} className="recipient-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(16,185,129,0.1)', color: 'var(--color-primary)', fontSize: '0.75rem', fontWeight: 600, padding: '2px 8px', borderRadius: '12px' }}>
+                      @{user.name}
+                      <button 
+                        type="button" 
+                        className="btn-remove-recipient" 
+                        style={{ border: 'none', background: 'transparent', color: 'red', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', padding: '0 2px' }}
+                        onClick={() => setSelectedRecipients(selectedRecipients.filter(r => r.id !== user.id))}
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              
+              {showMentionList && filteredMentionUsers.length > 0 && (
+                <div className="mention-dropdown-list" style={{ position: 'absolute', bottom: '60px', left: '10px', right: '10px', background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', boxShadow: '0 -4px 15px rgba(0,0,0,0.08)', maxHeight: '180px', overflowY: 'auto', zIndex: 1000 }}>
+                  {filteredMentionUsers.map((user) => (
+                    <div 
+                      key={user.id} 
+                      className="mention-item"
+                      style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', fontSize: '0.8rem' }}
+                      onClick={() => handleSelectMentionRecipient(user)}
                     >
-                      &times;
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-            
-            {showMentionList && filteredMentionUsers.length > 0 && (
-              <div className="mention-dropdown-list" style={{ position: 'absolute', bottom: '60px', left: '10px', right: '10px', background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', boxShadow: '0 -4px 15px rgba(0,0,0,0.08)', maxHeight: '180px', overflowY: 'auto', zIndex: 1000 }}>
-                {filteredMentionUsers.map((user) => (
-                  <div 
-                    key={user.id} 
-                    className="mention-item"
-                    style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', fontSize: '0.8rem' }}
-                    onClick={() => handleSelectMentionRecipient(user)}
-                  >
-                    <strong>{user.name}</strong> <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>({user.email})</span>
-                  </div>
-                ))}
-              </div>
-            )}
+                      <strong>{user.name}</strong> <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>({user.email})</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            <div className="input-wrapper-row" style={{ display: 'flex', width: '100%', gap: '8px', padding: '10px 12px', background: 'white', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-              <input
-                type="text"
-                placeholder="Escribe tu mensaje... (@ para privado)"
-                className="chat-input-field"
-                style={{ flex: 1, border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px 12px', fontSize: '0.85rem' }}
-                value={chatInput}
-                onChange={handleChatInputChange}
-              />
-              <button type="submit" className="btn btn-primary" style={{ padding: '8px 12px' }}>
-                <i className="fa-solid fa-paper-plane"></i>
-              </button>
-            </div>
-          </form>
+              <div className="input-wrapper-row" style={{ display: 'flex', width: '100%', gap: '8px', padding: '10px 12px', background: 'white', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                <input
+                  type="text"
+                  placeholder="Escribe tu mensaje... (@ para privado)"
+                  className="chat-input-field"
+                  style={{ flex: 1, border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px 12px', fontSize: '0.85rem' }}
+                  value={chatInput}
+                  onChange={handleChatInputChange}
+                />
+                <button type="submit" className="btn btn-primary" style={{ padding: '8px 12px' }}>
+                  <i className="fa-solid fa-paper-plane"></i>
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       )}
 
