@@ -1150,7 +1150,7 @@ export default function DashboardPage() {
 
     if (stateFilter === 'open' && (!hasPrediction || isLocked || m.played)) return false;
     if (stateFilter === 'todo' && (hasPrediction || isLocked || m.played)) return false;
-    if (stateFilter === 'locked' && !isLocked && !m.played) return false;
+    if (stateFilter === 'locked' && (!isLocked || m.played)) return false;
     return true;
   });
 
