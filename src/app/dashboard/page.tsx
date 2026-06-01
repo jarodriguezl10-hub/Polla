@@ -286,21 +286,31 @@ export default function DashboardPage() {
         if (isLocked && isRecent) {
           const announcedKey = `announced_${match.id}`;
           if (!localStorage.getItem(announcedKey)) {
-            try {
-              const res = await fetch('/api/predictions/announce', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ matchId: match.id })
-              });
-              if (res.ok) {
-                const data = await res.json();
-                if (data.success) {
-                  localStorage.setItem(announcedKey, 'true');
+            // Jitter to prevent race conditions: Admins fire immediately, others wait 5-20 seconds
+            const SUPER_ADMIN_EMAILS = ['jarodriguezl10@gmail.com', 'cristhiancamilo@gmail.com'];
+            const isAdmin = currentUser?.role === 'admin' || (currentUser?.email && SUPER_ADMIN_EMAILS.includes(currentUser.email.toLowerCase()));
+            const randomDelay = isAdmin ? 0 : 5000 + Math.floor(Math.random() * 15000);
+
+            setTimeout(async () => {
+              // Check again inside timeout just in case it was updated
+              if (localStorage.getItem(announcedKey)) return;
+
+              try {
+                const res = await fetch('/api/predictions/announce', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ matchId: match.id })
+                });
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data.success) {
+                    localStorage.setItem(announcedKey, 'true');
+                  }
                 }
+              } catch (e) {
+                console.error('Error invoking prediction announcement:', e);
               }
-            } catch (e) {
-              console.error('Error invoking prediction announcement:', e);
-            }
+            }, randomDelay);
           }
         }
       }
