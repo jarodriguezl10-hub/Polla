@@ -1148,7 +1148,7 @@ export default function DashboardPage() {
     const diffMins = (kickoff - now) / (60 * 1000);
     const isLocked = diffMins <= 10;
 
-    if (stateFilter === 'open' && (isLocked || m.played)) return false;
+    if (stateFilter === 'open' && (!hasPrediction || isLocked || m.played)) return false;
     if (stateFilter === 'todo' && (hasPrediction || isLocked || m.played)) return false;
     if (stateFilter === 'locked' && !isLocked && !m.played) return false;
     return true;
@@ -1660,17 +1660,17 @@ export default function DashboardPage() {
                   </button>
                   <button 
                     type="button"
-                    className={`segment-btn ${stateFilter === 'open' ? 'active' : ''}`}
-                    onClick={() => setStateFilter('open')}
-                  >
-                    Abiertos
-                  </button>
-                  <button 
-                    type="button"
                     className={`segment-btn ${stateFilter === 'todo' ? 'active' : ''}`}
                     onClick={() => setStateFilter('todo')}
                   >
                     Sin pronosticar
+                  </button>
+                  <button 
+                    type="button"
+                    className={`segment-btn ${stateFilter === 'open' ? 'active' : ''}`}
+                    onClick={() => setStateFilter('open')}
+                  >
+                    Abiertos
                   </button>
                   <button 
                     type="button"
