@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase } from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 60; // Cache on Vercel Edge for 60 seconds
 
 export async function GET() {
   try {
@@ -89,7 +90,11 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json(mapped);
+    return NextResponse.json(mapped, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120'
+      }
+    });
   } catch (error) {
     console.error("Error in group predictions API:", error);
     return NextResponse.json({ error: "Error al recuperar los pronósticos del grupo" }, { status: 500 });
