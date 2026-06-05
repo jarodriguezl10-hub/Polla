@@ -11,7 +11,7 @@ export async function GET() {
       // 1. Fetch ALL users (just 77 rows, tiny payload)
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('id, name, points, diff_matches, winner_matches, exact_matches, created_at');
+        .select('id, name, email, role, points, diff_matches, winner_matches, exact_matches, created_at');
       if (userError) throw userError;
       users = userData || [];
     } else {
