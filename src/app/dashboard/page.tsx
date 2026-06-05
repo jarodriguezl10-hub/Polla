@@ -2770,7 +2770,7 @@ export default function DashboardPage() {
 
       {/* CREDIT FOOTER */}
       <footer className="app-footer">
-        <p>Version 1.2 | Creador : Alejandro Rodriguez</p>
+        <p>Version 1.3</p>
       </footer>
 
       {/* POPUP MODAL: GROUP PREDICTIONS (FAIR PLAY DISPLAY) */}
