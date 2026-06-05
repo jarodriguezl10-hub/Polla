@@ -23,165 +23,19 @@ function getRelativeDateString(daysOffset: number, hoursOffset = 0, minutesOffse
 }
 
 function getInitialMockData() {
-  const groups = [
-    { name: "Grupo A", teams: [ {name: "México", code: "mx"}, {name: "Sudáfrica", code: "za"}, {name: "Australia", code: "au"}, {name: "Haití", code: "ht"} ] },
-    { name: "Grupo B", teams: [ {name: "Canadá", code: "ca"}, {name: "Bosnia y Herzegovina", code: "ba"}, {name: "Irak", code: "iq"}, {name: "Cabo Verde", code: "cv"} ] },
-    { name: "Grupo C", teams: [ {name: "Brasil", code: "br"}, {name: "Marruecos", code: "ma"}, {name: "Jordania", code: "jo"}, {name: "Curazao", code: "cw"} ] },
-    { name: "Grupo D", teams: [ {name: "Estados Unidos", code: "us"}, {name: "Paraguay", code: "py"}, {name: "Japón", code: "jp"}, {name: "Argelia", code: "dz"} ] },
-    { name: "Grupo E", teams: [ {name: "Argentina", code: "ar"}, {name: "Croacia", code: "hr"}, {name: "Catar", code: "qa"}, {name: "Túnez", code: "tn"} ] },
-    { name: "Grupo F", teams: [ {name: "Francia", code: "fr"}, {name: "Bélgica", code: "be"}, {name: "Arabia Saudita", code: "sa"}, {name: "RD Congo", code: "cd"} ] },
-    { name: "Grupo G", teams: [ {name: "España", code: "es"}, {name: "Uruguay", code: "uy"}, {name: "Uzbekistán", code: "uz"}, {name: "Costa de Marfil", code: "ci"} ] },
-    { name: "Grupo H", teams: [ {name: "Portugal", code: "pt"}, {name: "Colombia", code: "co"}, {name: "Escocia", code: "gb-sct"}, {name: "Ghana", code: "gh"} ] },
-    { name: "Grupo I", teams: [ {name: "Inglaterra", code: "gb-eng"}, {name: "Países Bajos", code: "nl"}, {name: "Senegal", code: "sn"}, {name: "Panamá", code: "pa"} ] },
-    { name: "Grupo J", teams: [ {name: "Alemania", code: "de"}, {name: "Austria", code: "at"}, {name: "Noruega", code: "no"}, {name: "República de Corea", code: "kr"} ] },
-    { name: "Grupo K", teams: [ {name: "Suiza", code: "ch"}, {name: "Suecia", code: "se"}, {name: "Turquía", code: "tr"}, {name: "Ecuador", code: "ec"} ] },
-    { name: "Grupo L", teams: [ {name: "Dinamarca", code: "dk"}, {name: "Chile", code: "cl"}, {name: "Ucrania", code: "ua"}, {name: "Egipto", code: "eg"} ] }
+  const matches = [
+    { id: "m1", group_name: "Grupo A", team_a: "México", team_b: "Sudáfrica", team_a_code: "mx", team_b_code: "za", kickoff_utc: getRelativeDateString(0, 0, 5), phase: "groups", score_a: null, score_b: null, played: false },
+    { id: "m2", group_name: "Grupo A", team_a: "Corea del Sur", team_b: "Chequia", team_a_code: "kr", team_b_code: "cz", kickoff_utc: getRelativeDateString(0, 2), phase: "groups", score_a: null, score_b: null, played: false },
+    { id: "m3", group_name: "Grupo B", team_a: "Canadá", team_b: "Suiza", team_a_code: "ca", team_b_code: "ch", kickoff_utc: getRelativeDateString(1), phase: "groups", score_a: null, score_b: null, played: false },
+    { id: "m4", group_name: "Grupo C", team_a: "Brasil", team_b: "Marruecos", team_a_code: "br", team_b_code: "ma", kickoff_utc: getRelativeDateString(1, 4), phase: "groups", score_a: null, score_b: null, played: false },
+    { id: "m5", group_name: "Grupo D", team_a: "Estados Unidos", team_b: "Paraguay", team_a_code: "us", team_b_code: "py", kickoff_utc: getRelativeDateString(2), phase: "groups", score_a: null, score_b: null, played: false },
+    { id: "m6", group_name: "Grupo H", team_a: "España", team_b: "Uruguay", team_a_code: "es", team_b_code: "uy", kickoff_utc: getRelativeDateString(3), phase: "groups", score_a: null, score_b: null, played: false },
+    { id: "m7", group_name: "Grupo K", team_a: "Portugal", team_b: "Colombia", team_a_code: "pt", team_b_code: "co", kickoff_utc: getRelativeDateString(4), phase: "groups", score_a: null, score_b: null, played: false },
+    { id: "m8", group_name: "Octavos de Final", team_a: "Argentina", team_b: "Francia", team_a_code: "ar", team_b_code: "fr", kickoff_utc: getRelativeDateString(10), phase: "elimination", score_a: null, score_b: null, played: false },
+    { id: "m9", group_name: "Cuartos de Final", team_a: "Alemania", team_b: "Inglaterra", team_a_code: "de", team_b_code: "gb-eng", kickoff_utc: getRelativeDateString(12), phase: "elimination", score_a: null, score_b: null, played: false },
+    { id: "m10", group_name: "Semifinal", team_a: "Ganador C1", team_b: "Ganador C2", team_a_code: "un", team_b_code: "un", kickoff_utc: getRelativeDateString(14), phase: "elimination", score_a: null, score_b: null, played: false },
+    { id: "m11", group_name: "Gran Final", team_a: "Ganador S1", team_b: "Ganador S2", team_a_code: "un", team_b_code: "un", kickoff_utc: getRelativeDateString(16), phase: "elimination", score_a: null, score_b: null, played: false }
   ];
-
-  const matches: any[] = [];
-  let matchCounter = 1;
-  const startDate = new Date("2026-06-11T17:00:00Z");
-
-  groups.forEach((g, gIdx) => {
-    const t = g.teams;
-    const pairings = [
-      [0, 1], [2, 3],
-      [0, 2], [1, 3],
-      [0, 3], [1, 2]
-    ];
-
-    pairings.forEach((pair, pIdx) => {
-      const matchId = `m${matchCounter}`;
-      const dateOffset = gIdx * 1.2 + Math.floor(pIdx / 2) * 4;
-      const kickoff = new Date(startDate.getTime() + dateOffset * 24 * 60 * 60 * 1000 + (pIdx % 2 ? 3 : 0) * 60 * 60 * 1000);
-
-      matches.push({
-        id: matchId,
-        group_name: g.name,
-        team_a: t[pair[0]].name,
-        team_b: t[pair[1]].name,
-        team_a_code: t[pair[0]].code,
-        team_b_code: t[pair[1]].code,
-        kickoff_utc: kickoff.toISOString(),
-        phase: "groups",
-        score_a: null,
-        score_b: null,
-        played: false
-      });
-      matchCounter++;
-    });
-  });
-
-  // Round of 32 (Dieciseisavos)
-  for (let i = 1; i <= 16; i++) {
-    const dateOffset = 17 + Math.floor((i - 1) / 4) * 1.5;
-    const kickoff = new Date(startDate.getTime() + dateOffset * 24 * 60 * 60 * 1000 + ((i - 1) % 4 * 3) * 60 * 60 * 1000);
-    matches.push({
-      id: `m${matchCounter}`,
-      group_name: "Dieciseisavos de Final",
-      team_a: `Clasificado A${i}`,
-      team_b: `Clasificado B${i}`,
-      team_a_code: "un",
-      team_b_code: "un",
-      kickoff_utc: kickoff.toISOString(),
-      phase: "elimination",
-      score_a: null,
-      score_b: null,
-      played: false
-    });
-    matchCounter++;
-  }
-
-  // Round of 16 (Octavos)
-  for (let i = 1; i <= 8; i++) {
-    const dateOffset = 23 + Math.floor((i - 1) / 2) * 1.5;
-    const kickoff = new Date(startDate.getTime() + dateOffset * 24 * 60 * 60 * 1000 + ((i - 1) % 2 * 4) * 60 * 60 * 1000);
-    matches.push({
-      id: `m${matchCounter}`,
-      group_name: "Octavos de Final",
-      team_a: `Ganador D${2*i-1}`,
-      team_b: `Ganador D${2*i}`,
-      team_a_code: "un",
-      team_b_code: "un",
-      kickoff_utc: kickoff.toISOString(),
-      phase: "elimination",
-      score_a: null,
-      score_b: null,
-      played: false
-    });
-    matchCounter++;
-  }
-
-  // Quarter-finals (Cuartos)
-  for (let i = 1; i <= 4; i++) {
-    const dateOffset = 28 + Math.floor((i - 1) / 2) * 2;
-    const kickoff = new Date(startDate.getTime() + dateOffset * 24 * 60 * 60 * 1000 + ((i - 1) % 2 * 4) * 60 * 60 * 1000);
-    matches.push({
-      id: `m${matchCounter}`,
-      group_name: "Cuartos de Final",
-      team_a: `Ganador O${2*i-1}`,
-      team_b: `Ganador O${2*i}`,
-      team_a_code: "un",
-      team_b_code: "un",
-      kickoff_utc: kickoff.toISOString(),
-      phase: "elimination",
-      score_a: null,
-      score_b: null,
-      played: false
-    });
-    matchCounter++;
-  }
-
-  // Semi-finals
-  for (let i = 1; i <= 2; i++) {
-    const dateOffset = 33 + (i - 1) * 2;
-    const kickoff = new Date(startDate.getTime() + dateOffset * 24 * 60 * 60 * 1000);
-    matches.push({
-      id: `m${matchCounter}`,
-      group_name: "Semifinal",
-      team_a: `Ganador C${2*i-1}`,
-      team_b: `Ganador C${2*i}`,
-      team_a_code: "un",
-      team_b_code: "un",
-      kickoff_utc: kickoff.toISOString(),
-      phase: "elimination",
-      score_a: null,
-      score_b: null,
-      played: false
-    });
-    matchCounter++;
-  }
-
-  // Third-place play-off
-  matches.push({
-    id: `m${matchCounter}`,
-    group_name: "Tercer Puesto",
-    team_a: "Perdedor S1",
-    team_b: "Perdedor S2",
-    team_a_code: "un",
-    team_b_code: "un",
-    kickoff_utc: new Date(startDate.getTime() + 37 * 24 * 60 * 60 * 1000).toISOString(),
-    phase: "elimination",
-    score_a: null,
-    score_b: null,
-    played: false
-  });
-  matchCounter++;
-
-  // Grand Final
-  matches.push({
-    id: `m${matchCounter}`,
-    group_name: "Gran Final",
-    team_a: "Ganador S1",
-    team_b: "Ganador S2",
-    team_a_code: "un",
-    team_b_code: "un",
-    kickoff_utc: new Date(startDate.getTime() + 38 * 24 * 60 * 60 * 1000).toISOString(),
-    phase: "elimination",
-    score_a: null,
-    score_b: null,
-    played: false
-  });
 
   const users = [
     { id: "u_admin", email: "admin@polla.com", name: "Administrador Mundial", role: "admin", points: 0, exact_matches: 0, winner_matches: 0, diff_matches: 0 },
@@ -269,49 +123,14 @@ function saveMockDb(data: any) {
   fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// Recalculates user points based on real match scores
-export function recalculateMockScores(db: any) {
-  const userBaselines: any = {
-    u_admin: 0,
-    u1: 25,
-    u2: 22,
-    u3: 18,
-    u4: 15,
-    u5: 12
-  };
+// Removed legacy global recalculateMockScores function which reset users to 0
 
-  db.users.forEach((user: any) => {
-    user.points = userBaselines[user.id] || 0;
-    user.exact_matches = 0;
-    user.winner_matches = 0;
-    user.diff_matches = 0;
-  });
-
-  db.predictions.forEach((pred: any) => {
-    const match = db.matches.find((m: any) => m.id === pred.match_id);
-    if (match && match.played) {
-      const stats = calculatePredictionPoints(pred.score_a, pred.score_b, match.score_a, match.score_b, match.phase);
-      pred.points_earned = stats.points;
-
-      const user = db.users.find((u: any) => u.id === pred.user_id);
-      if (user) {
-        user.points += stats.points;
-        if (stats.exact) user.exact_matches += 1;
-        if (stats.winner) user.winner_matches += 1;
-        if (stats.diff) user.diff_matches += 1;
-      }
-    } else {
-      pred.points_earned = 0;
-    }
-  });
-}
-
-function calculatePredictionPoints(predA: number, predB: number, realA: number, realB: number, phase: string) {
+export function calculatePredictionPoints(predA: number, predB: number, realA: number | null, realB: number | null, phase: string) {
   if (predA === null || predB === null || realA === null || realB === null) {
     return { points: 0, exact: false, winner: false, diff: false };
   }
 
-  const isGroup = phase === "groups" || phase === "PRUEBA";
+  const isGroup = phase === "groups";
   const ptsWinner = isGroup ? 5 : 10;
   const ptsGoals = isGroup ? 2 : 4;
   const ptsDiff = isGroup ? 1 : 2;
@@ -419,9 +238,6 @@ const mockClient = {
             });
 
             if (updatedCount > 0) {
-              if (table === 'matches') {
-                recalculateMockScores(db);
-              }
               saveMockDb(db);
             }
 
@@ -477,12 +293,3 @@ const mockClient = {
 // Export active client (Real or Mock Fallback)
 export const supabase = isRealSupabase ? realClient : mockClient;
 export { mockClient };
-
-// Auto-initialize local JSON database if mock is used on server side
-if (!isRealSupabase && typeof window === 'undefined') {
-  try {
-    loadMockDb();
-  } catch (e) {
-    console.error("Error auto-initializing local mock database:", e);
-  }
-}
