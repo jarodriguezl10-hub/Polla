@@ -22,7 +22,7 @@ export async function GET() {
       // 2. Fetch only the last 5 played matches to calculate streaks and trends efficiently
       const { data: matchData, error: matchError } = await supabase
         .from('matches')
-        .select('id, kickoff_utc, date, score_a, score_b, played')
+        .select('id, kickoff_utc, score_a, score_b, played')
         .eq('played', true)
         .order('kickoff_utc', { ascending: false })
         .limit(5);
