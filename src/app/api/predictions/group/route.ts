@@ -11,19 +11,37 @@ export async function GET() {
     let users: any[] = [];
 
     if (isRealSupabase) {
-      const [mRes, pRes, uRes] = await Promise.all([
-        supabase.from('matches').select('*'),
-        supabase.from('predictions').select('*'),
-        supabase.from('users').select('*')
-      ]);
+      // 1. Fetch ALL matches to determine which are locked
+      const { data: matchesData, error: mErr } = await supabase.from('matches').select('id, kickoff_utc, date');
+      if (mErr) throw new Error("Supabase matches fetch failed");
+      matches = matchesData || [];
 
-      if (mRes.error || pRes.error || uRes.error) {
-        throw new Error("Supabase fetch failed");
+      // Filter matches that are locked (kickoff <= 10 mins from now)
+      const lockedMatchIds = matches
+        .filter((m: any) => {
+          const kickoff = new Date(m.kickoff_utc || m.date).getTime();
+          return (kickoff - now) < 10 * 60 * 1000;
+        })
+        .map((m: any) => m.id);
+
+      // 2. Fetch users (just the fields needed for ranking and display)
+      const { data: usersData, error: uErr } = await supabase
+        .from('users')
+        .select('id, name, points, diff_matches, winner_matches, exact_matches, created_at');
+      if (uErr) throw new Error("Supabase users fetch failed");
+      users = usersData || [];
+
+      // 3. ONLY fetch predictions for the locked matches! (HUGE BANDWIDTH SAVING)
+      if (lockedMatchIds.length > 0) {
+        // Supabase has a limit on .in() arrays (usually 1000 items), but locked matches won't exceed that.
+        const { data: predsData, error: pErr } = await supabase
+          .from('predictions')
+          .select('user_id, match_id, score_a, score_b, points_earned')
+          .in('match_id', lockedMatchIds);
+        
+        if (pErr) throw new Error("Supabase predictions fetch failed");
+        predictions = predsData || [];
       }
-
-      matches = mRes.data;
-      predictions = pRes.data;
-      users = uRes.data;
     } else {
       const fs = require('fs');
       const path = require('path');
@@ -35,7 +53,6 @@ export async function GET() {
       users = db.users;
     }
 
-    // Filter matches that are locked (kickoff <= 10 mins from now)
     const lockedMatchIds = matches
       .filter((m: any) => {
         const kickoff = new Date(m.kickoff_utc || m.date).getTime();
