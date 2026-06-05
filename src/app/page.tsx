@@ -167,12 +167,12 @@ export default function LoginPage() {
               {showNameInput && (
                 <div className="form-group animate-fade-in">
                   <label htmlFor="login-name">
-                    <i className="fa-solid fa-user"></i> Tu Nombre
+                    <i className="fa-solid fa-user"></i> TU NOMBRE O ALIAS
                   </label>
                   <input
                     type="text"
                     id="login-name"
-                    placeholder="Ej. Alejandro Rodriguez"
+                    placeholder="Ejemplo. Armando Casas"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={loading}
@@ -183,7 +183,7 @@ export default function LoginPage() {
 
               <div className="form-group">
                 <label htmlFor="login-email">
-                  <i className="fa-solid fa-envelope"></i> Ingresa tu Correo Electrónico
+                  <i className="fa-solid fa-envelope"></i> INGRESA TU CORREO ELECTRONICO PERSONAL
                 </label>
                 <input
                   type="email"
@@ -287,7 +287,7 @@ export default function LoginPage() {
           )}
 
           <footer className="login-footer">
-            <p>Version 1.2 | Creador : Alejandro Rodriguez</p>
+            <p>Version 1.3</p>
           </footer>
         </div>
       </div>
