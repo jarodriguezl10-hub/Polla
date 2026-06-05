@@ -13,7 +13,7 @@ export async function GET() {
 
     if (isRealSupabase) {
       // 1. Fetch ALL matches to determine which are locked
-      const { data: matchesData, error: mErr } = await supabase.from('matches').select('id, kickoff_utc, date');
+      const { data: matchesData, error: mErr } = await supabase.from('matches').select('id, kickoff_utc');
       if (mErr) throw new Error("Supabase matches fetch failed");
       matches = matchesData || [];
 
