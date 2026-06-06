@@ -2778,7 +2778,12 @@ export default function DashboardPage() {
         <div className="modal" onClick={() => setShowModal(false)}>
           <div className="modal-content glass-panel" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Pronósticos del Grupo</h3>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <h3>Pronósticos del Grupo</h3>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 600, marginTop: '4px' }}>
+                  <i className="fa-solid fa-shield-halved"></i> Auditado: Las horas muestran cuándo se guardó el pronóstico.
+                </span>
+              </div>
               <button className="btn-close-modal" onClick={() => setShowModal(false)}>
                 <i className="fa-solid fa-xmark"></i>
               </button>
@@ -2819,7 +2824,14 @@ export default function DashboardPage() {
                     ) : (
                       modalPreds.map((pred, i) => (
                         <tr key={i}>
-                          <td><strong>{pred.userName}</strong></td>
+                          <td>
+                            <strong>{pred.userName}</strong>
+                            {pred.updatedAt && (
+                              <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                                <i className="fa-regular fa-clock"></i> Guardado: {new Date(pred.updatedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} {new Date(pred.updatedAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            )}
+                          </td>
                           <td className="text-center" style={{ fontWeight: 800, fontSize: '1.1rem', color: '#0f172a' }}>
                             {pred.scoreA !== null && pred.scoreB !== null ? `${pred.scoreA} : ${pred.scoreB}` : '- : -'}
                           </td>

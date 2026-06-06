@@ -37,7 +37,7 @@ export async function GET() {
         // Supabase has a limit on .in() arrays (usually 1000 items), but locked matches won't exceed that.
         const { data: predsData, error: pErr } = await supabase
           .from('predictions')
-          .select('user_id, match_id, score_a, score_b, points_earned')
+          .select('user_id, match_id, score_a, score_b, points_earned, created_at')
           .in('match_id', lockedMatchIds);
         
         if (pErr) throw new Error("Supabase predictions fetch failed");
@@ -85,7 +85,8 @@ export async function GET() {
           userName: user.name || "Usuario",
           scoreA: p ? p.score_a : null,
           scoreB: p ? p.score_b : null,
-          pointsEarned: p ? p.points_earned : null
+          pointsEarned: p ? p.points_earned : null,
+          updatedAt: p ? p.created_at : null
         });
       }
     }

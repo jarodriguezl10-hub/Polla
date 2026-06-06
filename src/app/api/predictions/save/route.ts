@@ -38,16 +38,18 @@ export async function POST(request: Request) {
 
     // 2. Save prediction
     if (isRealSupabase) {
-      // Delete old prediction if exists (or upsert)
+      // Delete old prediction to force a new created_at timestamp on insert
+      await supabase.from('predictions').delete().match({ user_id: userId, match_id: matchId });
+      
       const { error } = await supabase
         .from('predictions')
-        .upsert({
+        .insert({
           user_id: userId,
           match_id: matchId,
           score_a: parseInt(scoreA),
           score_b: parseInt(scoreB),
           points_earned: 0
-        }, { onConflict: 'user_id,match_id' });
+        });
 
       if (error) {
         console.error("Supabase prediction save error:", error);
