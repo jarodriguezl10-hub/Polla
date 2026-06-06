@@ -2890,7 +2890,7 @@ export default function DashboardPage() {
 
       {/* CREDIT FOOTER */}
       <footer className="app-footer">
-        <p>Version 1.3</p>
+        <p>Version 2.0</p>
       </footer>
 
       {/* POPUP MODAL: GROUP PREDICTIONS (FAIR PLAY DISPLAY) */}

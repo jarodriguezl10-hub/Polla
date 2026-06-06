@@ -373,7 +373,7 @@ export default function LoginPage() {
           )}
 
           <footer className="login-footer">
-            <p>Version 1.3</p>
+            <p>Version 2.0</p>
           </footer>
         </div>
       </div>

@@ -1,0 +1,274 @@
+[
+  {
+    "id": "21dafb01-fdab-45d6-89be-618e78db996b",
+    "user_id": "472b5229-9bad-4e45-8c03-876a5ecd5c0c",
+    "user_name": "Alejandro Rodriguez",
+    "text": "hola ",
+    "created_at": "2026-06-01T00:29:01.664+00:00",
+    "recipient_ids": "c3eb402a-d50d-46ae-93ac-e2f41e3e8dea"
+  },
+  {
+    "id": "57858f88-0541-4668-b0ef-594b5ac178ce",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Alemania vs Finlandia El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 4 - 0 [MatchID: m116]",
+    "created_at": "2026-06-01T02:36:33.749+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "4176c031-7f22-45f4-ae4a-6149d776d32f",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Japon vs Islandia El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 2 - 0 [MatchID: m113]",
+    "created_at": "2026-06-01T02:36:33.988+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "7ba449ec-7141-42c4-b87b-3260885735be",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Polonia vs Ucrania El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 2 [MatchID: m115]",
+    "created_at": "2026-06-01T02:36:34.263+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "c13d37e4-ded8-4239-a642-0e331878088e",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Suiza vs Jordania El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 5 - 0 [MatchID: m114]",
+    "created_at": "2026-06-01T02:36:34.731+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "98f19012-edf8-480e-ad1b-afe6d771af02",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Brasil vs Panama El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 3 - 0 [MatchID: m117]",
+    "created_at": "2026-06-01T02:36:35.175+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "a3708c6d-6f40-4cc8-a3b5-04c2e51cdf75",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Maldivias vs Afganistan El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 0 [MatchID: m123]",
+    "created_at": "2026-06-01T15:50:17.133+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "b4df94cf-0187-4ef9-8319-00ba01842fa4",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Eslovaquia vs Malta El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 0 [MatchID: m122]",
+    "created_at": "2026-06-01T15:50:18.014+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "e0f15225-2337-49ad-8405-fad663e47368",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Bulgaria vs Montenegro El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 3 - 0 [MatchID: m119]",
+    "created_at": "2026-06-01T15:51:15.961+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "2ba4c55d-411b-4fc3-9ef3-35fd1880639d",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Noruega  vs Suecia El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 1 [MatchID: m118]",
+    "created_at": "2026-06-01T16:51:16.315+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "78cba2c7-06b3-46c3-87fc-1041b4416e6a",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Noruega  vs Suecia El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 1 [MatchID: m118]",
+    "created_at": "2026-06-01T16:51:16.032+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "2f3e2367-b68b-411e-a0d1-e90edb021fc7",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Turquia vs Macedonia del norte El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** Sin pronóstico 🚫 [MatchID: m124]",
+    "created_at": "2026-06-01T17:21:16.511+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "f2e72757-86f0-4412-8e99-ee2c6ae3b9a9",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Turquia vs Macedonia del norte El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** Sin pronóstico 🚫 [MatchID: m124]",
+    "created_at": "2026-06-01T17:21:16.379+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "d07b0366-20c3-431a-9cf8-7d988396a114",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Austria vs Tunez El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 0 - 1 [MatchID: m120]",
+    "created_at": "2026-06-01T18:35:04.773+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "91896998-b96a-4425-9fbf-fe37d1465206",
+    "user_id": "472b5229-9bad-4e45-8c03-876a5ecd5c0c",
+    "user_name": "Alejandro Rodriguez",
+    "text": "Buenas tardes",
+    "created_at": "2026-06-01T18:39:31.397+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "282b38d9-ac71-4752-8c3c-dafbf948c982",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Colombia vs Costa Rica El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 2 - 0 [MatchID: m121]",
+    "created_at": "2026-06-01T22:51:06.692+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "4eefe181-a19f-4494-9cdf-ad660cdc740b",
+    "user_id": "c3eb402a-d50d-46ae-93ac-e2f41e3e8dea",
+    "user_name": "Cristhian Camilo Mahecha Herrera",
+    "text": "Hola Alejito cómo vamos en la polla ",
+    "created_at": "2026-06-01T23:56:05.985+00:00",
+    "recipient_ids": "472b5229-9bad-4e45-8c03-876a5ecd5c0c"
+  },
+  {
+    "id": "05ed8df1-e74b-477e-a95a-108a7fea1881",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Canada vs Uzbekistan El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 0 [MatchID: m125]",
+    "created_at": "2026-06-02T00:50:11.067+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "6956b647-047d-4684-9214-80cc68c10e81",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Croacia vs Belgica El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 2 [MatchID: m126]",
+    "created_at": "2026-06-02T15:51:53.175+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "cb35fba9-f741-4151-b1c6-9efb652af50e",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Georgia vs Rumania El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 0 - 2 [MatchID: m127]",
+    "created_at": "2026-06-02T16:50:00.94+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "4783a619-cf75-4c4d-a492-0b9af031178b",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Gales vs Ghana El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 1 [MatchID: m128]",
+    "created_at": "2026-06-02T18:35:00.909+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "284296b5-1a9d-473a-950b-0926c05b4879",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Dinamarca vs Congo DR El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 0 [MatchID: m129]",
+    "created_at": "2026-06-03T17:51:59.142+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "0173696a-0bf5-4661-b90b-871b589200e0",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Países bajos vs Argelia El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 3 - 1 [MatchID: m130]",
+    "created_at": "2026-06-03T18:35:18.893+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "d4ac2391-b1d4-41bb-8a3d-35ff65cfeecc",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Luxemburgo vs Italia El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 0 - 2 [MatchID: m131]",
+    "created_at": "2026-06-03T18:35:22.875+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "4674068f-55d4-4511-8ab0-a1c699daf7c1",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Panamá vs Republica Dominicana El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 2 - 0 [MatchID: m132]",
+    "created_at": "2026-06-04T00:35:26.259+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "5e8c5b93-4863-4f35-86d9-a872a3c4fd50",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Suecia vs Grecia El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 3 - 0 [MatchID: m133]",
+    "created_at": "2026-06-04T16:51:33.878+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "d8a4d8f1-8519-406a-ab32-ac737ce936a0",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — España vs Irak El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 5 - 0 [MatchID: m134]",
+    "created_at": "2026-06-04T18:50:38.533+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "12afb294-3752-41a7-a511-3d03c065cc2e",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — México vs Serbia El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 0 - 2 [MatchID: m135]",
+    "created_at": "2026-06-05T01:50:26.347+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "bcda9b41-4ef9-451b-8d89-d2ce801ea0c9",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Singapur vs China El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 1 [MatchID: m136]",
+    "created_at": "2026-06-05T11:21:18.761+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "2e930178-c63e-4a9c-bad3-3fc7d66f15f0",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Portugal  vs Chile El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 3 - 1 [MatchID: m139]",
+    "created_at": "2026-06-05T17:35:00.749+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "22d2d7ea-ee5b-480b-ba6f-39fe9773a615",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — Paraguay vs Nicaragua El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 2 - 0 [MatchID: m137]",
+    "created_at": "2026-06-05T22:05:28.982+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "74247065-e897-4953-9d05-f4cf2ef4e20e",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — prueba 1 vs prueba 2 El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 2 [MatchID: m144]",
+    "created_at": "2026-06-06T03:45:22.943+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "1e9e9705-8427-445d-91c2-d8b32a53b7e6",
+    "user_id": null,
+    "user_name": "🤖 Notificación automática",
+    "text": "🔒 **PARTIDO INICIADO** — prueba 1 vs prueba 2 El partido se ha bloqueado. 👤 **Pronóstico Alejandro Rodriguez:** 1 - 1 [MatchID: m145]",
+    "created_at": "2026-06-06T05:24:15.693+00:00",
+    "recipient_ids": null
+  },
+  {
+    "id": "40cda5f0-7da3-4e0f-9b79-96e3639aa6b0",
+    "user_id": "472b5229-9bad-4e45-8c03-876a5ecd5c0c",
+    "user_name": "Alejandro Rodriguez",
+    "text": "como bien y tu",
+    "created_at": "2026-06-06T06:02:17.654+00:00",
+    "recipient_ids": "c3eb402a-d50d-46ae-93ac-e2f41e3e8dea"
+  }
+]

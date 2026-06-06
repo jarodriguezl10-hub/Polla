@@ -1,0 +1,58 @@
+[
+  {
+    "id": "7bfae9ed-5ef0-4333-9da0-26659a44ae25",
+    "recollection_date": "2026-05-29T18:32:00+00:00",
+    "created_at": "2026-05-30T13:41:45.762717+00:00",
+    "conciliated": true,
+    "conciliated_at": "2026-05-30T18:29:10.455+00:00",
+    "notes": "Jhon Burgos"
+  },
+  {
+    "id": "9389c7c9-d882-4f0f-b79f-c141a7060485",
+    "recollection_date": "2026-05-29T19:27:00+00:00",
+    "created_at": "2026-05-30T13:18:14.866185+00:00",
+    "conciliated": true,
+    "conciliated_at": "2026-05-31T00:07:10.047+00:00",
+    "notes": "Aurora"
+  },
+  {
+    "id": "62fb7d63-5602-4e59-9093-7d64fbc3b41c",
+    "recollection_date": "2026-06-01T01:54:00+00:00",
+    "created_at": "2026-06-01T01:54:37.551171+00:00",
+    "conciliated": true,
+    "conciliated_at": "2026-06-01T13:00:24.852+00:00",
+    "notes": "Angelica Montaño "
+  },
+  {
+    "id": "d240b7b9-b888-472e-bf77-236c3d0b8486",
+    "recollection_date": "2026-06-01T17:04:00+00:00",
+    "created_at": "2026-06-02T00:11:49.189973+00:00",
+    "conciliated": true,
+    "conciliated_at": "2026-06-04T00:24:21.165+00:00",
+    "notes": "Camilo Esteban Empresas"
+  },
+  {
+    "id": "b28aba7c-844c-4ae5-940f-b2fcf0461313",
+    "recollection_date": "2026-06-04T00:06:00+00:00",
+    "created_at": "2026-06-04T00:14:56.978816+00:00",
+    "conciliated": true,
+    "conciliated_at": "2026-06-04T21:25:43.939+00:00",
+    "notes": "Helman (Jeff)"
+  },
+  {
+    "id": "202692cb-b590-4080-823d-8b648c491004",
+    "recollection_date": "2026-06-04T13:22:00+00:00",
+    "created_at": "2026-06-04T13:43:34.260871+00:00",
+    "conciliated": true,
+    "conciliated_at": "2026-06-04T21:25:47.497+00:00",
+    "notes": "Josman"
+  },
+  {
+    "id": "c4fa922a-20ad-42a2-b39e-592a778d22bc",
+    "recollection_date": "2026-06-04T14:45:00+00:00",
+    "created_at": "2026-06-04T14:45:31.944959+00:00",
+    "conciliated": true,
+    "conciliated_at": "2026-06-05T01:14:53.874+00:00",
+    "notes": "Julián Mina "
+  }
+]

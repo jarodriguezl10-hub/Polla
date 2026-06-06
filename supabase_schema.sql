@@ -11,11 +11,15 @@ CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
-    role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+    role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin', 'rejected')),
     points INTEGER DEFAULT 0,
     exact_matches INTEGER DEFAULT 0,
     winner_matches INTEGER DEFAULT 0,
     diff_matches INTEGER DEFAULT 0,
+    paid BOOLEAN DEFAULT FALSE,
+    receive_emails BOOLEAN DEFAULT TRUE,
+    accepted_data_policy BOOLEAN DEFAULT FALSE,
+    accepted_transparency BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -33,6 +37,7 @@ CREATE TABLE IF NOT EXISTS public.matches (
     score_b INTEGER,
     played BOOLEAN DEFAULT FALSE,
     ai_prediction TEXT DEFAULT NULL,
+    emails_sent BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -54,6 +59,7 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
     user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
     user_name TEXT NOT NULL,
     text TEXT NOT NULL,
+    recipient_ids TEXT DEFAULT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -66,12 +72,22 @@ CREATE TABLE IF NOT EXISTS public.otps (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 6. Tabla de Pagos Sin Conciliar
+CREATE TABLE IF NOT EXISTS public.unconciliated_payments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    recollection_date TIMESTAMPTZ NOT NULL,
+    notes TEXT,
+    conciliated BOOLEAN DEFAULT FALSE,
+    conciliated_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
 -- Deshabilitar Seguridad de Fila (RLS) en todas las tablas para permitir acceso directo de API
 ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.matches DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.predictions DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_messages DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.otps DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.unconciliated_payments DISABLE ROW LEVEL SECURITY;
 
 -- ==========================================
 -- CONFIGURACIÓN DE TIEMPO REAL (REALTIME)
@@ -83,45 +99,6 @@ alter publication supabase_realtime add table public.chat_messages;
 alter publication supabase_realtime add table public.users;
 
 -- ==========================================
--- INSERCIÓN DE DATOS DE SEMILLA (SEED DATA)
+-- FIN DEL SCRIPT DE INICIALIZACIÓN
+-- Los datos se insertarán vía script de migración
 -- ==========================================
-
--- Semilla de Partidos Oficiales (Mundial 2026)
--- Nota: Ajusta las fechas de kickoff a tu conveniencia (las de abajo son dinámicas basadas en los días siguientes)
-INSERT INTO public.matches (id, group_name, team_a, team_b, team_a_code, team_b_code, kickoff_utc, phase, played) VALUES
-('m1', 'Grupo A', 'México', 'Sudáfrica', 'mx', 'za', '2026-06-11T17:00:00Z', 'groups', FALSE),
-('m2', 'Grupo A', 'Corea del Sur', 'Chequia', 'kr', 'cz', '2026-06-11T20:00:00Z', 'groups', FALSE),
-('m3', 'Grupo B', 'Canadá', 'Bosnia y Herzegovina', 'ca', 'ba', '2026-06-12T19:00:00Z', 'groups', FALSE),
-('m4', 'Grupo C', 'Brasil', 'Marruecos', 'br', 'ma', '2026-06-12T22:00:00Z', 'groups', FALSE),
-('m5', 'Grupo D', 'Estados Unidos', 'Paraguay', 'us', 'py', '2026-06-13T01:00:00Z', 'groups', FALSE),
-('m6', 'Grupo H', 'España', 'Uruguay', 'es', 'uy', '2026-06-13T17:00:00Z', 'groups', FALSE),
-('m7', 'Grupo K', 'Portugal', 'Colombia', 'pt', 'co', '2026-06-14T19:00:00Z', 'groups', FALSE),
-('m8', 'Octavos de Final', 'Argentina', 'Francia', 'ar', 'fr', '2026-06-28T19:00:00Z', 'elimination', FALSE),
-('m9', 'Cuartos de Final', 'Alemania', 'Inglaterra', 'de', 'gb-eng', '2026-07-09T19:00:00Z', 'elimination', FALSE),
-('m10', 'Semifinal', 'Ganador C1', 'Ganador C2', 'un', 'un', '2026-07-14T19:00:00Z', 'elimination', FALSE),
-('m11', 'Gran Final', 'Ganador S1', 'Ganador S2', 'un', 'un', '2026-07-19T19:00:00Z', 'elimination', FALSE)
-ON CONFLICT (id) DO UPDATE SET 
-  team_a = EXCLUDED.team_a,
-  team_b = EXCLUDED.team_b,
-  team_a_code = EXCLUDED.team_a_code,
-  team_b_code = EXCLUDED.team_b_code,
-  kickoff_utc = EXCLUDED.kickoff_utc,
-  phase = EXCLUDED.phase;
-
--- Semilla de Usuarios Iniciales (Rivales Virtuales)
--- Nota: La contraseña no es necesaria dado que la plataforma utiliza login con código OTP enviado al email.
--- Se crea un administrador por defecto (admin@polla.com)
-INSERT INTO public.users (id, email, name, role, points, exact_matches, winner_matches, diff_matches) VALUES
-('00000000-0000-0000-0000-000000000001', 'admin@polla.com', 'Administrador Mundial', 'admin', 0, 0, 0, 0),
-('00000000-0000-0000-0000-000000000002', 'valderrama@polla.com', 'Pibe Valderrama', 'user', 42, 3, 4, 2),
-('00000000-0000-0000-0000-000000000003', 'james@polla.com', 'James Rodríguez', 'user', 38, 2, 5, 1),
-('00000000-0000-0000-0000-000000000004', 'falcao@polla.com', 'Radamel Falcao', 'user', 35, 1, 6, 2),
-('00000000-0000-0000-0000-000000000005', 'lucho@polla.com', 'Lucho Díaz', 'user', 29, 2, 3, 1),
-('00000000-0000-0000-0000-000000000006', 'shakira@polla.com', 'Shakira Mebarak', 'user', 25, 0, 5, 0)
-ON CONFLICT (email) DO NOTHING;
-
--- Mensajes de Chat Semilla iniciales
-INSERT INTO public.chat_messages (user_id, user_name, text, created_at) VALUES
-('00000000-0000-0000-0000-000000000002', 'Pibe Valderrama', '¡Todo bien, todo bien! ¿Quién gana el primer partido?', NOW() - INTERVAL '2 hours'),
-('00000000-0000-0000-0000-000000000003', 'James Rodríguez', 'Yo le puse fe a México, juegan bien de local.', NOW() - INTERVAL '1 hour'),
-('00000000-0000-0000-0000-000000000004', 'Radamel Falcao', 'Ojo con Sudáfrica, son rápidos al contragolpe.', NOW() - INTERVAL '30 minutes');
