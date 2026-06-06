@@ -229,7 +229,7 @@ export default function DashboardPage() {
       loadAdminData();
       loadUnconciliatedPayments();
     }
-  }, [activeTab, currentUser]);
+  }, [activeTab, currentUser?.id]);
 
   // Chat Real-Time Synchronization (Supabase Realtime OR dynamic polling fallback)
   useEffect(() => {
