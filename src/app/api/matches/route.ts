@@ -1,19 +1,14 @@
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase } from '@/lib/supabaseClient';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 60; // Cache on Vercel Edge for 60 seconds
+export const revalidate = 31536000; // Cache for 1 year (Infinite Cache until revalidated)
 
 export async function GET() {
   try {
     if (isRealSupabase) {
       const { data, error } = await supabase.from('matches').select('*').order('kickoff_utc', { ascending: true });
       if (error) throw error;
-      return NextResponse.json(data, {
-        headers: {
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120'
-        }
-      });
+      return NextResponse.json(data);
     } else {
       const fs = require('fs');
       const path = require('path');

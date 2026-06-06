@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase, calculatePredictionPoints } from '@/lib/supabaseClient';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(request: Request) {
   try {
@@ -149,6 +150,10 @@ export async function POST(request: Request) {
         fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
       }
     }
+
+    revalidatePath('/api/leaderboard');
+    revalidatePath('/api/matches');
+    revalidatePath('/api/predictions/group');
 
     return NextResponse.json({ success: true });
   } catch (error) {

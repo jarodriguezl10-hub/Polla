@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase } from '@/lib/supabaseClient';
+import { revalidatePath } from 'next/cache';
 
 const ADMIN_EMAILS = ['jarodriguezl10@gmail.com', 'jrodriguezl10@gmail.com', 'mario.montalvo@gmail.com', 'cristhiancamilo@gmail.com'];
 
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
       fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
     }
 
+    revalidatePath('/api/matches');
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error creating match:", error);

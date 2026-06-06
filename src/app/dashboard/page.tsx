@@ -103,6 +103,8 @@ export default function DashboardPage() {
   const [adminSearch, setAdminSearch] = useState('');
   const [adminPhaseFilter, setAdminPhaseFilter] = useState('all');
   const [adminMatchStateFilter, setAdminMatchStateFilter] = useState('all');
+  const [emailPreferences, setEmailPreferences] = useState<{ [key: string]: boolean }>({});
+  const [emailPreferencesSaving, setEmailPreferencesSaving] = useState(false);
 
   // Admin payment states
   const [selectedUnpaidUserId, setSelectedUnpaidUserId] = useState('');
@@ -159,7 +161,14 @@ export default function DashboardPage() {
       // Fetch leaderboard on mount to ensure we always have the user's rank
       fetch('/api/leaderboard')
         .then(res => res.json())
-        .then(data => setLeaderboard(data))
+        .then(data => {
+          setLeaderboard(data);
+          const prefs: { [key: string]: boolean } = {};
+          data.forEach((u: any) => {
+            prefs[u.id] = u.receive_emails !== false;
+          });
+          setEmailPreferences(prefs);
+        })
         .catch(e => console.error("Error fetching leaderboard on mount", e));
     }
   }, [router]);
@@ -558,11 +567,10 @@ export default function DashboardPage() {
     setModalMatch(match);
     
     try {
-      const res = await fetch('/api/predictions/group');
+      const res = await fetch(`/api/predictions/group?matchId=${matchId}`);
       if (res.ok) {
         const data = await res.json();
-        const filtered = data.filter((p: any) => p.matchId === matchId);
-        setModalPreds(filtered);
+        setModalPreds(data);
         setShowModal(true);
       }
     } catch (e) {
@@ -2297,6 +2305,82 @@ export default function DashboardPage() {
               </div>
 
               <div className="admin-side-column" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* 1.5 NOTIFICACIONES DE AUDITORÍA */}
+                <div className="glass-panel" style={{ maxHeight: '400px', display: 'flex', flexDirection: 'column' }}>
+                  <h3><i className="fa-solid fa-envelope" style={{ color: '#0ea5e9', marginRight: '6px' }}></i> Notificaciones de Auditoría</h3>
+                  <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '10px' }}>
+                    Selecciona quién recibe los pronósticos cuando un partido se bloquea.
+                  </p>
+                  
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                    <button 
+                      className="btn btn-secondary" 
+                      style={{ flex: 1, fontSize: '0.8rem', padding: '6px' }}
+                      onClick={() => {
+                        const newPrefs = { ...emailPreferences };
+                        leaderboard.forEach((u: any) => newPrefs[u.id] = true);
+                        setEmailPreferences(newPrefs);
+                      }}
+                    >
+                      <i className="fa-solid fa-check-double"></i> Todos
+                    </button>
+                    <button 
+                      className="btn btn-secondary" 
+                      style={{ flex: 1, fontSize: '0.8rem', padding: '6px' }}
+                      onClick={() => {
+                        const newPrefs = { ...emailPreferences };
+                        leaderboard.forEach((u: any) => newPrefs[u.id] = false);
+                        setEmailPreferences(newPrefs);
+                      }}
+                    >
+                      <i className="fa-solid fa-ban"></i> Ninguno
+                    </button>
+                  </div>
+
+                  <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '8px', marginBottom: '10px', backgroundColor: 'rgba(0,0,0,0.02)' }}>
+                    {leaderboard.map((u: any) => (
+                      <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{u.name}</span>
+                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{u.email}</span>
+                        </div>
+                        <input 
+                          type="checkbox" 
+                          checked={emailPreferences[u.id] || false}
+                          onChange={(e) => setEmailPreferences(prev => ({ ...prev, [u.id]: e.target.checked }))}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={async () => {
+                      setEmailPreferencesSaving(true);
+                      try {
+                        const res = await fetch('/api/admin/email-preferences', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ preferences: emailPreferences })
+                        });
+                        if (res.ok) {
+                          showToast('Preferencias de correo guardadas', 'success');
+                        } else {
+                          showToast('Error al guardar preferencias', 'error');
+                        }
+                      } catch (e) {
+                        showToast('Error de red al guardar preferencias', 'error');
+                      } finally {
+                        setEmailPreferencesSaving(false);
+                      }
+                    }}
+                    disabled={emailPreferencesSaving}
+                  >
+                    {emailPreferencesSaving ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-save"></i> Guardar Preferencias</>}
+                  </button>
+                </div>
+
                 {/* 2. INGRESAR NUEVO PARTIDO */}
                 <div className="glass-panel">
                   <h3><i className="fa-solid fa-trophy" style={{ color: '#c49a1c', marginRight: '6px' }}></i> Ingresar Nuevo Partido</h3>

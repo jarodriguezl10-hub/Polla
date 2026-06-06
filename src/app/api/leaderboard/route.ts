@@ -1,60 +1,54 @@
+export const revalidate = 31536000; // Cache for 1 year (Infinite Cache until revalidated)
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase } from '@/lib/supabaseClient';
 
-export const dynamic = 'force-dynamic';
-
-export const revalidate = 60; // Cache on Vercel Edge for 60 seconds
-
-export async function GET() {
+export async function GET(request: Request) {
   try {
     let users: any[] = [];
     let recentMatches: any[] = [];
     let recentPredictions: any[] = [];
 
     if (isRealSupabase) {
-      // 1. Fetch ALL users (just 77 rows, tiny payload)
+      // 1. Obtener todos los usuarios con sus stats de puntos
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('id, name, email, role, points, diff_matches, winner_matches, exact_matches, paid, created_at');
-      if (userError) throw userError;
+        .select('id, name, email, role, points, diff_matches, winner_matches, exact_matches, paid, created_at, receive_emails');
+      
+      if (userError) throw new Error("Supabase users fetch failed");
       users = userData || [];
 
-      // 2. Fetch only the last 5 played matches to calculate streaks and trends efficiently
+      // 2. Obtener SOLO los últimos 5 partidos jugados para las rachas (en lugar de todos los partidos)
       const { data: matchData, error: matchError } = await supabase
         .from('matches')
         .select('id, kickoff_utc, score_a, score_b, played')
         .eq('played', true)
         .order('kickoff_utc', { ascending: false })
         .limit(5);
-      
-      if (matchError) throw matchError;
+
+      if (matchError) throw new Error("Supabase matches fetch failed: " + matchError.message);
       recentMatches = matchData || [];
 
-      // 3. Fetch predictions ONLY for those last 5 matches (Max 5 * 77 = 385 rows!)
-      if (recentMatches.length > 0) {
-        const matchIds = recentMatches.map((m: any) => m.id);
-        const { data: predData, error: predError } = await supabase
+      const last5Ids = recentMatches.map(m => m.id);
+
+      // 3. Obtener SOLO las predicciones de esos 5 últimos partidos
+      if (last5Ids.length > 0) {
+        const { data: predsData, error: predsError } = await supabase
           .from('predictions')
           .select('user_id, match_id, score_a, score_b, points_earned')
-          .in('match_id', matchIds);
+          .in('match_id', last5Ids);
         
-        if (predError) throw predError;
-        recentPredictions = predData || [];
+        if (predsError) throw new Error("Supabase predictions fetch failed");
+        recentPredictions = predsData || [];
       }
+
     } else {
+      // Fallback a JSON local...
       const fs = require('fs');
       const path = require('path');
       const DB_PATH = path.join(process.cwd(), 'database.json');
       const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-      users = db.users || [];
-      recentMatches = (db.matches || []).filter((m: any) => m.played).sort((a: any, b: any) => {
-        const dateA = new Date(a.kickoff_utc || a.date).getTime();
-        const dateB = new Date(b.kickoff_utc || b.date).getTime();
-        return dateB - dateA; // Descending
-      }).slice(0, 5);
       
-      const matchIds = recentMatches.map((m: any) => m.id);
-      recentPredictions = (db.predictions || []).filter((p: any) => matchIds.includes(p.match_id));
+      users = db.users || [];
     }
 
     const lastPlayedMatch = recentMatches[0]; // The most recent played match
@@ -70,6 +64,7 @@ export async function GET() {
         winner_matches: u.winner_matches || 0,
         exact_matches: u.exact_matches || 0,
         created_at: u.created_at || new Date().toISOString(),
+        receive_emails: u.receive_emails !== false,
         // Previous values (before last match was resolved)
         prev_points: u.points || 0,
         prev_diff: u.diff_matches || 0,
@@ -189,11 +184,7 @@ export async function GET() {
     enrichedUsers.sort((a: any, b: any) => a.currentRank - b.currentRank);
 
     // Return with Cache headers (revalidate already tells Next.js App Router to cache)
-    return NextResponse.json(enrichedUsers, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120'
-      }
-    });
+    return NextResponse.json(enrichedUsers);
   } catch (error) {
     console.error("Error in leaderboard API:", error);
     return NextResponse.json({ error: "Error al recuperar la clasificación" }, { status: 500 });
