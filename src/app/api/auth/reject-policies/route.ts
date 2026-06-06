@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase } from '@/lib/supabaseClient';
 
+import { revalidatePath } from 'next/cache';
+
 export async function POST(request: Request) {
   try {
     const { userId } = await request.json();
@@ -31,6 +33,9 @@ export async function POST(request: Request) {
         fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
       }
     }
+
+    revalidatePath('/api/leaderboard');
+    revalidatePath('/dashboard');
 
     return NextResponse.json({ success: true });
   } catch (error) {
