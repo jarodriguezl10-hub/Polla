@@ -180,13 +180,6 @@ export default function DashboardPage() {
             });
             setEmailPreferences(prefs);
 
-            // Check if current user needs to accept policies
-            const me = data.find((u: any) => u.id === parsed.id);
-            if (me) {
-              if (me.accepted_data_policy !== true || me.accepted_transparency !== true) {
-                setShowBlockingPolicyModal(true);
-              }
-            }
           } else {
             console.error("Leaderboard no es un array:", data);
           }
@@ -202,6 +195,17 @@ export default function DashboardPage() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Global policy check
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.accepted_data_policy !== true || currentUser.accepted_transparency !== true) {
+        setShowBlockingPolicyModal(true);
+      } else {
+        setShowBlockingPolicyModal(false);
+      }
+    }
+  }, [currentUser?.accepted_data_policy, currentUser?.accepted_transparency]);
 
   // Load read notification IDs from localStorage on mount
   useEffect(() => {
@@ -430,9 +434,6 @@ export default function DashboardPage() {
         if (me) {
           setCurrentUser(me);
           localStorage.setItem('polla_user', JSON.stringify(me));
-          if (me.accepted_data_policy !== true || me.accepted_transparency !== true) {
-            setShowBlockingPolicyModal(true);
-          }
         }
       }
       if (Array.isArray(fetchedMatches)) setMatches(fetchedMatches);
@@ -3274,10 +3275,26 @@ export default function DashboardPage() {
             </div>
 
             <button 
-              className="btn btn-primary btn-block" 
-              disabled={savingBlockingPolicies || blockingAcceptedPrivacy !== 'yes' || blockingAcceptedTransparency !== 'yes'}
-              style={{ padding: '14px', fontSize: '1.05rem', fontWeight: 600, borderRadius: '8px' }}
+              className="btn btn-block" 
+              disabled={savingBlockingPolicies || (blockingAcceptedPrivacy !== 'yes' && blockingAcceptedPrivacy !== 'no') || (blockingAcceptedTransparency !== 'yes' && blockingAcceptedTransparency !== 'no') || (blockingAcceptedPrivacy === 'yes' && blockingAcceptedTransparency === 'no') || (blockingAcceptedPrivacy === 'no' && blockingAcceptedTransparency === 'yes')}
+              style={{ 
+                padding: '14px', 
+                fontSize: '1.05rem', 
+                fontWeight: 600, 
+                borderRadius: '8px',
+                backgroundColor: (blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') ? '#f97316' : 'var(--color-primary)',
+                color: 'white',
+                border: 'none',
+                opacity: (savingBlockingPolicies || (blockingAcceptedPrivacy !== 'yes' && blockingAcceptedPrivacy !== 'no') || (blockingAcceptedTransparency !== 'yes' && blockingAcceptedTransparency !== 'no')) ? 0.6 : 1
+              }}
               onClick={async () => {
+                if (blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') {
+                  // Log out and redirect to home
+                  localStorage.removeItem('polla_user');
+                  router.push('/');
+                  return;
+                }
+
                 if (blockingAcceptedPrivacy === 'yes' && blockingAcceptedTransparency === 'yes') {
                   setSavingBlockingPolicies(true);
                   try {
@@ -3304,7 +3321,7 @@ export default function DashboardPage() {
                 }
               }}
             >
-              {savingBlockingPolicies ? <i className="fa-solid fa-circle-notch fa-spin"></i> : "Continuar en la Aplicación"}
+              {savingBlockingPolicies ? <i className="fa-solid fa-circle-notch fa-spin"></i> : ((blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') ? "NO CONTINUO EN LA POLLA" : "Continuar en la Aplicación")}
             </button>
             {(blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') && (
               <p style={{ color: '#ef4444', fontSize: '0.85rem', textAlign: 'center', marginTop: '15px' }}>
