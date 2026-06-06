@@ -3260,14 +3260,14 @@ export default function DashboardPage() {
 
             <button 
               className="btn btn-primary btn-block" 
-              disabled={savingBlockingPolicies || (blockingAcceptedPrivacy !== 'yes' && blockingAcceptedPrivacy !== 'no') || (blockingAcceptedTransparency !== 'yes' && blockingAcceptedTransparency !== 'no') || (blockingAcceptedPrivacy === 'yes' && blockingAcceptedTransparency === 'no') || (blockingAcceptedPrivacy === 'no' && blockingAcceptedTransparency === 'yes')}
+              disabled={savingBlockingPolicies || (!((blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') || (blockingAcceptedPrivacy === 'yes' && blockingAcceptedTransparency === 'yes')))}
               style={{ 
                 padding: '14px', 
                 fontSize: '1.05rem', 
                 fontWeight: 600, 
                 borderRadius: '8px',
                 background: (blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') ? '#f97316' : '',
-                opacity: (savingBlockingPolicies || (blockingAcceptedPrivacy !== 'yes' && blockingAcceptedPrivacy !== 'no') || (blockingAcceptedTransparency !== 'yes' && blockingAcceptedTransparency !== 'no')) ? 0.6 : 1
+                opacity: (savingBlockingPolicies || (!((blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') || (blockingAcceptedPrivacy === 'yes' && blockingAcceptedTransparency === 'yes')))) ? 0.6 : 1
               }}
               onClick={async () => {
                 if (blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') {
