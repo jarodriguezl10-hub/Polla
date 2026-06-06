@@ -19,7 +19,11 @@ export async function POST(request: Request) {
       if (mErr || !mData) return NextResponse.json({ error: "Partido no encontrado" }, { status: 404 });
       match = mData;
 
-      const { data: uData } = await supabase.from('users').select('id, name, points, diff_matches, winner_matches, exact_matches, created_at');
+      if (match.emails_sent) {
+        return NextResponse.json({ error: "El correo ya fue enviado para este partido" }, { status: 400 });
+      }
+
+      const { data: uData } = await supabase.from('users').select('id, name, email, points, diff_matches, winner_matches, exact_matches, created_at, receive_emails');
       users = uData || [];
 
       const { data: pData } = await supabase.from('predictions').select('user_id, score_a, score_b, created_at').eq('match_id', matchId);
@@ -31,9 +35,15 @@ export async function POST(request: Request) {
       const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
       match = db.matches.find((m: any) => m.id === matchId);
       if (!match) return NextResponse.json({ error: "Partido no encontrado" }, { status: 404 });
+      if (match.emails_sent) {
+        return NextResponse.json({ error: "El correo ya fue enviado para este partido" }, { status: 400 });
+      }
       users = db.users || [];
       predictions = (db.predictions || []).filter((p: any) => p.match_id === matchId);
     }
+
+    // Prepare BCC list
+    const bccEmails = users.filter((u: any) => u.email && u.receive_emails !== false).map((u: any) => u.email).join(',');
 
     // 2. Format HTML table with all predictions
     let rowsHtml = '';
@@ -113,13 +123,30 @@ export async function POST(request: Request) {
 
     const mailOptions = {
       from: process.env.SMTP_FROM || '"Polla Mundial 2026" <noreply@pollamundial.com>',
-      to: 'cristhiancamilo@gmail.com, jarodriguezl10@gmail.com', // HARDCODED for this local test, as requested by user
+      to: 'jarodriguezl10@gmail.com, cristhiancamilo@gmail.com', // Administradores directos
+      bcc: bccEmails, // Todos los usuarios suscritos en copia oculta
       subject: `🔒 Auditoría: Pronósticos ${match.team_a} vs ${match.team_b}`,
       html: htmlContent,
     };
 
     const info = await transporter.sendMail(mailOptions);
     console.log("Message sent: %s", info.messageId);
+
+    // Update match so it doesn't send again
+    if (isRealSupabase) {
+      await supabase.from('matches').update({ emails_sent: true }).eq('id', matchId);
+    } else {
+      match.emails_sent = true;
+      const fs = require('fs');
+      const path = require('path');
+      const DB_PATH = path.join(process.cwd(), 'database.json');
+      const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+      const dbMatch = db.matches.find((m: any) => m.id === matchId);
+      if (dbMatch) {
+        dbMatch.emails_sent = true;
+        fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
+      }
+    }
 
     return NextResponse.json({ success: true, messageId: info.messageId });
   } catch (error: any) {

@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "No pending matches" });
     }
 
-    const lockedMatches = matches.filter(m => {
+    const lockedMatches = matches.filter((m: any) => {
       const kickoff = new Date(m.kickoff_utc).getTime();
       const diffMins = (kickoff - now) / (60 * 1000);
       return diffMins <= 10 && diffMins >= -120; // Only matches currently happening or about to happen
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
       },
     });
 
-    const bccEmails = users.filter(u => u.email).map(u => u.email).join(',');
+    const bccEmails = users.filter((u: any) => u.email).map((u: any) => u.email).join(',');
     let sentCount = 0;
 
     // 4. Procesar cada partido bloqueado
@@ -94,7 +94,7 @@ export async function GET(request: Request) {
       for (let i = 0; i < sortedUsers.length; i++) {
         const user = sortedUsers[i];
         const pos = i + 1;
-        const p = (predictions || []).find(pred => pred.user_id === user.id);
+        const p = (predictions || []).find((pred: any) => pred.user_id === user.id);
         const scoreText = p ? `<strong>${p.score_a} - ${p.score_b}</strong>` : `<span style="color: #999">No pronosticó</span>`;
         const pointsText = `${user.points || 0} pts`;
         

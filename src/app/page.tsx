@@ -18,6 +18,26 @@ export default function LoginPage() {
   const [mounted, setMounted] = useState(false);
   const [showNameInput, setShowNameInput] = useState(false);
 
+  // Policies states
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState<'yes' | 'no' | null>(null);
+  const [acceptedTransparency, setAcceptedTransparency] = useState<'yes' | 'no' | null>(null);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showTransparencyModal, setShowTransparencyModal] = useState(false);
+  
+  // No-Confirmation states
+  const [privacyNoConfirmed, setPrivacyNoConfirmed] = useState(false);
+  const [transparencyNoConfirmed, setTransparencyNoConfirmed] = useState(false);
+
+  const handlePrivacyChange = (val: 'yes' | 'no') => {
+    setAcceptedPrivacy(val);
+    if (val === 'yes') setPrivacyNoConfirmed(false);
+  };
+
+  const handleTransparencyChange = (val: 'yes' | 'no') => {
+    setAcceptedTransparency(val);
+    if (val === 'yes') setTransparencyNoConfirmed(false);
+  };
+
   useEffect(() => {
     setMounted(true);
     // Session Guard check
@@ -69,9 +89,19 @@ export default function LoginPage() {
       return;
     }
 
-    if (showNameInput && (!name || !name.trim())) {
-      showToast('Por favor, ingresa tu nombre para continuar', 'error');
-      return;
+    if (showNameInput) {
+      if (!name || !name.trim()) {
+        showToast('Por favor, ingresa tu nombre para continuar', 'error');
+        return;
+      }
+      if (acceptedPrivacy === null || acceptedTransparency === null) {
+        showToast('Debes responder a las políticas de Privacidad y Transparencia', 'error');
+        return;
+      }
+      if (acceptedPrivacy === 'no' || acceptedTransparency === 'no') {
+        showToast('No puedes registrarte sin aceptar las políticas obligatorias.', 'error');
+        return;
+      }
     }
 
     const normalizedEmail = email.toLowerCase().trim();
@@ -178,6 +208,62 @@ export default function LoginPage() {
                     disabled={loading}
                     required
                   />
+                </div>
+              )}
+
+              {showNameInput && (
+                <div className="form-group animate-fade-in" style={{ backgroundColor: '#ffffff', color: '#1e293b', padding: '20px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                  <p style={{ margin: '0 0 15px 0', fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>Políticas Obligatorias</p>
+                  
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#0f172a' }}>1. Tratamiento de Datos Personales</span>
+                      <button type="button" onClick={() => setShowPrivacyModal(true)} className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '0.8rem', borderRadius: '4px' }}>Leer política</button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '20px' }}>
+                      <label style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <input type="radio" name="privacy" checked={acceptedPrivacy === 'yes'} onChange={() => handlePrivacyChange('yes')} disabled={loading} style={{ transform: 'scale(1.2)' }} /> Sí acepto
+                      </label>
+                      <label style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <input type="radio" name="privacy" checked={acceptedPrivacy === 'no'} onChange={() => handlePrivacyChange('no')} disabled={loading} style={{ transform: 'scale(1.2)' }} /> No acepto
+                      </label>
+                    </div>
+                    {acceptedPrivacy === 'no' && (
+                      <div style={{ background: '#fef2f2', border: '1px solid #f87171', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginTop: '12px', fontSize: '0.85rem' }}>
+                        <p style={{ margin: '0 0 10px 0' }}><i className="fa-solid fa-triangle-exclamation"></i> <strong>Advertencia:</strong> Si no aceptas, no podrás registrarte en la Polla Mundialista.</p>
+                        {!privacyNoConfirmed ? (
+                          <button type="button" onClick={() => setPrivacyNoConfirmed(true)} style={{ background: '#ef4444', color: 'white', padding: '8px 16px', fontSize: '0.85rem', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Estoy seguro, cancelar registro</button>
+                        ) : (
+                          <p style={{ margin: 0, fontWeight: 600 }}>Has rechazado la política. Tu registro ha sido cancelado. Puedes cerrar la ventana.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#0f172a' }}>2. Manejo de Transparencia (Zero Trust)</span>
+                      <button type="button" onClick={() => setShowTransparencyModal(true)} className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '0.8rem', borderRadius: '4px' }}>Leer política</button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '20px' }}>
+                      <label style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <input type="radio" name="transparency" checked={acceptedTransparency === 'yes'} onChange={() => handleTransparencyChange('yes')} disabled={loading} style={{ transform: 'scale(1.2)' }} /> Sí acepto
+                      </label>
+                      <label style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <input type="radio" name="transparency" checked={acceptedTransparency === 'no'} onChange={() => handleTransparencyChange('no')} disabled={loading} style={{ transform: 'scale(1.2)' }} /> No acepto
+                      </label>
+                    </div>
+                    {acceptedTransparency === 'no' && (
+                      <div style={{ background: '#fef2f2', border: '1px solid #f87171', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginTop: '12px', fontSize: '0.85rem' }}>
+                        <p style={{ margin: '0 0 10px 0' }}><i className="fa-solid fa-triangle-exclamation"></i> <strong>Advertencia:</strong> Si no aceptas, no podrás registrarte en la Polla Mundialista.</p>
+                        {!transparencyNoConfirmed ? (
+                          <button type="button" onClick={() => setTransparencyNoConfirmed(true)} style={{ background: '#ef4444', color: 'white', padding: '8px 16px', fontSize: '0.85rem', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Estoy seguro, cancelar registro</button>
+                        ) : (
+                          <p style={{ margin: 0, fontWeight: 600 }}>Has rechazado la política. Tu registro ha sido cancelado. Puedes cerrar la ventana.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -296,6 +382,42 @@ export default function LoginPage() {
       {toast && (
         <div className={`toast ${toast.type}`}>
           {toast.message}
+        </div>
+      )}
+
+      {/* Privacy Policy Modal (Read Only overlay) */}
+      {showPrivacyModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '30px', maxWidth: '700px', width: '100%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', color: '#1e293b', border: '1px solid #e2e8f0', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <h2 style={{ marginTop: 0, marginBottom: '20px', color: '#0284c7', fontSize: '1.4rem', fontWeight: 700 }}>Política de Privacidad y Tratamiento de Datos</h2>
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '15px', fontSize: '1.05rem', lineHeight: '1.7', color: '#334155' }}>
+              <p><strong>1. Finalidad del Tratamiento</strong><br/>La información suministrada será tratada con los siguientes fines específicos:<br/>- Administración y gestión operativa de la quiniela.<br/>- Comunicación directa con los participantes sobre actualizaciones del evento.<br/>- Resolución de consultas, reclamos o disputas sobre la puntuación del juego.</p>
+              <p><strong>2. Datos Recolectados</strong><br/>- Datos de Carácter Personal: Nombre (o Alias) y Correo Electrónico.<br/>- Datos de Juego: Pronósticos realizados y puntajes obtenidos (estos datos son asociados a tu Alias y no constituyen información sensible).</p>
+              <p><strong>3. Principio de Temporalidad</strong><br/>En cumplimiento del principio de limitación de plazo, los datos personales serán tratados únicamente por el tiempo necesario para cumplir con la finalidad del juego y el periodo de auditoría post-evento. La eliminación total y definitiva se ejecutará exactamente 30 días calendario después de la gran final de la Copa del Mundo 2026.</p>
+              <p><strong>4. Medidas de Seguridad</strong><br/>La información será almacenada en entornos digitales seguros. El acceso está restringido únicamente al administrador de la quiniela para fines exclusivos del desarrollo del juego.</p>
+              <p><strong>5. Derechos de los Titulares</strong><br/>Como participante, tienes derecho a:<br/>- Conocer, actualizar y rectificar tus datos.<br/>- Solicitar prueba de la autorización otorgada.<br/>- Solicitar la supresión de tus datos antes de que finalice el periodo de retención.</p>
+              <p><strong>6. Consentimiento</strong><br/>Al registrarte en esta quiniela, el participante declara que ha leído, comprendido y aceptado expresamente el tratamiento de sus datos personales bajo las condiciones aquí expuestas.</p>
+              <p><strong>7. Comunicación de Pronósticos</strong><br/>Como parte de la dinámica, se enviarán actualizaciones y resúmenes de pronósticos al correo registrado. El participante podrá optar por no recibir estas comunicaciones indicándolo a los organizadores sin que esto afecte su participación en la quiniela.</p>
+            </div>
+            <button onClick={() => setShowPrivacyModal(false)} className="btn btn-primary" style={{ marginTop: '24px', padding: '12px', fontSize: '1.1rem', fontWeight: 600, borderRadius: '8px' }}>Entendido, Volver</button>
+          </div>
+        </div>
+      )}
+
+      {/* Transparency Policy Modal (Read Only overlay) */}
+      {showTransparencyModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '30px', maxWidth: '700px', width: '100%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', color: '#1e293b', border: '1px solid #e2e8f0', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <h2 style={{ marginTop: 0, marginBottom: '20px', color: '#0284c7', fontSize: '1.4rem', fontWeight: 700 }}>Políticas de Transparencia (Zero Trust)</h2>
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '15px', fontSize: '1.05rem', lineHeight: '1.7', color: '#334155' }}>
+              <p>Para garantizar un juego 100% justo y libre de manipulaciones, hemos implementado una arquitectura <strong>Zero Trust</strong> (Cero Confianza), en la cual ni siquiera el administrador puede alterar los pronósticos una vez bloqueados.</p>
+              <p><strong>1. Envío de Correos Automáticos y Públicos</strong><br/>Antes de iniciar cada partido (exactamente 10 minutos antes, cuando se bloquea la plataforma), el sistema enviará automáticamente un correo electrónico a todos los participantes con una copia exacta e inmutable de todos los pronósticos registrados para ese partido. Así, todos tendrán en su buzón la evidencia real y nadie podrá cambiar su marcador.</p>
+              <p><strong>2. Bloqueo Inquebrantable de Partidos</strong><br/>A falta de 10 minutos para el silbatazo inicial, la base de datos bloquea permanentemente cualquier actualización de pronósticos para dicho partido. No existen puertas traseras ("backdoors") para eludir esta regla.</p>
+              <p><strong>3. Caché Estático y Público</strong><br/>Toda la tabla de posiciones y resultados utiliza una capa de Caché Estático Inmutable en la nube. Los puntajes y cálculos de aciertos exactos, diferencias y ganadores se realizan bajo reglas estrictas que no pueden modificarse manualmente.</p>
+              <p>Al aceptar esta política, declaras entender que <strong>Polla Mundialista 2026</strong> asegura la completa transparencia de tus datos y el desarrollo íntegro del torneo.</p>
+            </div>
+            <button onClick={() => setShowTransparencyModal(false)} className="btn btn-primary" style={{ marginTop: '24px', padding: '12px', fontSize: '1.1rem', fontWeight: 600, borderRadius: '8px' }}>Entendido, Volver</button>
+          </div>
         </div>
       )}
     </div>

@@ -149,6 +149,16 @@ export default function DashboardPage() {
   const [showMentionList, setShowMentionList] = useState(false);
   const [mentionFilter, setMentionFilter] = useState('');
 
+  // Blocking Policies
+  const [showBlockingPolicyModal, setShowBlockingPolicyModal] = useState(false);
+  const [blockingAcceptedPrivacy, setBlockingAcceptedPrivacy] = useState<'yes'|'no'|null>(null);
+  const [blockingAcceptedTransparency, setBlockingAcceptedTransparency] = useState<'yes'|'no'|null>(null);
+  const [blockingPrivacyNoConfirmed, setBlockingPrivacyNoConfirmed] = useState(false);
+  const [blockingTransparencyNoConfirmed, setBlockingTransparencyNoConfirmed] = useState(false);
+  const [savingBlockingPolicies, setSavingBlockingPolicies] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showTransparencyModal, setShowTransparencyModal] = useState(false);
+
 
   // Authentication check
   useEffect(() => {
@@ -162,12 +172,24 @@ export default function DashboardPage() {
       fetch('/api/leaderboard')
         .then(res => res.json())
         .then(data => {
-          setLeaderboard(data);
-          const prefs: { [key: string]: boolean } = {};
-          data.forEach((u: any) => {
-            prefs[u.id] = u.receive_emails !== false;
-          });
-          setEmailPreferences(prefs);
+          if (Array.isArray(data)) {
+            setLeaderboard(data);
+            const prefs: { [key: string]: boolean } = {};
+            data.forEach((u: any) => {
+              prefs[u.id] = u.receive_emails !== false;
+            });
+            setEmailPreferences(prefs);
+
+            // Check if current user needs to accept policies
+            const me = data.find((u: any) => u.id === parsed.id);
+            if (me) {
+              if (me.accepted_data_policy !== true || me.accepted_transparency !== true) {
+                setShowBlockingPolicyModal(true);
+              }
+            }
+          } else {
+            console.error("Leaderboard no es un array:", data);
+          }
         })
         .catch(e => console.error("Error fetching leaderboard on mount", e));
     }
@@ -401,16 +423,20 @@ export default function DashboardPage() {
       const fetchedMatches = await mRes.json();
       const fetchedPreds = await pRes.json();
       
-      setLeaderboard(leaders);
-      setMatches(fetchedMatches);
-      setPredictions(fetchedPreds);
-
-      // Update current user points dynamically
-      const me = leaders.find((u: any) => u.id === currentUser.id);
-      if (me) {
-        setCurrentUser(me);
-        localStorage.setItem('polla_user', JSON.stringify(me));
+      if (Array.isArray(leaders)) {
+        setLeaderboard(leaders);
+        // Update current user points dynamically
+        const me = leaders.find((u: any) => u.id === currentUser.id);
+        if (me) {
+          setCurrentUser(me);
+          localStorage.setItem('polla_user', JSON.stringify(me));
+          if (me.accepted_data_policy !== true || me.accepted_transparency !== true) {
+            setShowBlockingPolicyModal(true);
+          }
+        }
       }
+      if (Array.isArray(fetchedMatches)) setMatches(fetchedMatches);
+      if (Array.isArray(fetchedPreds)) setPredictions(fetchedPreds);
     } catch (e) {
       showToast('Error al cargar datos del Dashboard', 'error');
     }
@@ -434,7 +460,8 @@ export default function DashboardPage() {
   const loadLeaderboardData = async () => {
     try {
       const res = await fetch('/api/leaderboard');
-      setLeaderboard(await res.json());
+      const data = await res.json();
+      if (Array.isArray(data)) setLeaderboard(data);
     } catch (e) {
       showToast('Error al cargar posiciones', 'error');
     }
@@ -450,24 +477,26 @@ export default function DashboardPage() {
       const data = await mRes.json();
       const leaders = await lRes.json();
       
-      setMatches(data);
-      setLeaderboard(leaders);
+      if (Array.isArray(data)) setMatches(data);
+      if (Array.isArray(leaders)) setLeaderboard(leaders);
 
       // Seed initial scores and teams states
       const scoresState: any = {};
       const teamsState: any = {};
-      data.forEach((match: any) => {
-        scoresState[match.id] = {
-          scoreA: match.score_a !== null ? match.score_a.toString() : '',
-          scoreB: match.score_b !== null ? match.score_b.toString() : ''
-        };
-        teamsState[match.id] = {
-          teamA: match.team_a,
-          teamACode: match.team_a_code,
-          teamB: match.team_b,
-          teamBCode: match.team_b_code
-        };
-      });
+      if (Array.isArray(data)) {
+        data.forEach((match: any) => {
+          scoresState[match.id] = {
+            scoreA: match.score_a !== null ? match.score_a.toString() : '',
+            scoreB: match.score_b !== null ? match.score_b.toString() : ''
+          };
+          teamsState[match.id] = {
+            teamA: match.team_a,
+            teamACode: match.team_a_code,
+            teamB: match.team_b,
+            teamBCode: match.team_b_code
+          };
+        });
+      }
       setAdminScores(scoresState);
       setAdminTeams(teamsState);
     } catch (e) {
@@ -2261,30 +2290,7 @@ export default function DashboardPage() {
                               >
                                 {adminLoading[match.id] ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-save"></i> Marcador</>}
                               </button>
-                              
-                              {isLocked && (
-                                <button 
-                                  className="btn" 
-                                  style={{ fontSize: '0.8rem', padding: '6px 12px', background: '#334155', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                                  onClick={async () => {
-                                    try {
-                                      const res = await fetch('/api/admin/send-audit-emails', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ matchId: match.id })
-                                      });
-                                      if(res.ok) showToast('Recibo enviado a ti y a Cristhian', 'success');
-                                      else showToast('Error al enviar el email: ' + (await res.json()).error, 'error');
-                                    } catch(e) {
-                                      showToast('Error de red al enviar el email', 'error');
-                                    }
-                                  }}
-                                  title="Enviar correo de auditoría con los pronósticos"
-                                >
-                                  <i className="fa-solid fa-envelope"></i> Audit
-                                </button>
-                              )}
-                              
+
                               {isElimination && (
                                 <button 
                                   className="btn btn-secondary" 
@@ -3207,6 +3213,141 @@ export default function DashboardPage() {
       {toast && (
         <div className={`toast ${toast.type}`}>
           {toast.message}
+        </div>
+      )}
+
+      {/* BLOCKING POLICY MODAL FOR EXISTING USERS */}
+      {showBlockingPolicyModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '24px', maxWidth: '600px', width: '100%', maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', color: '#1e293b', border: '1px solid #e2e8f0', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+            <h2 style={{ marginTop: 0, marginBottom: '16px', color: '#0f172a', fontSize: '1.4rem', textAlign: 'center' }}><i className="fa-solid fa-triangle-exclamation" style={{ color: '#f59e0b' }}></i> Actualización de Políticas Obligatoria</h2>
+            <p style={{ fontSize: '0.95rem', marginBottom: '20px', textAlign: 'justify', lineHeight: '1.5', color: '#475569' }}>Hemos actualizado nuestros términos. Para continuar usando Polla Mundialista 2026 debes revisar y aceptar nuestras políticas.</p>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#0f172a' }}>1. Tratamiento de Datos Personales</span>
+                <button type="button" onClick={() => setShowPrivacyModal(true)} className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '0.8rem', borderRadius: '4px' }}>Leer política</button>
+              </div>
+              <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
+                <label style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  <input type="radio" name="blocking-privacy" checked={blockingAcceptedPrivacy === 'yes'} onChange={() => { setBlockingAcceptedPrivacy('yes'); setBlockingPrivacyNoConfirmed(false); }} disabled={savingBlockingPolicies} style={{ transform: 'scale(1.2)' }} /> Sí acepto
+                </label>
+                <label style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  <input type="radio" name="blocking-privacy" checked={blockingAcceptedPrivacy === 'no'} onChange={() => setBlockingAcceptedPrivacy('no')} disabled={savingBlockingPolicies} style={{ transform: 'scale(1.2)' }} /> No acepto
+                </label>
+              </div>
+              {blockingAcceptedPrivacy === 'no' && (
+                <div style={{ background: '#fef2f2', border: '1px solid #f87171', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginTop: '12px', fontSize: '0.85rem' }}>
+                  <p style={{ margin: '0 0 10px 0' }}><i className="fa-solid fa-triangle-exclamation"></i> <strong>Advertencia:</strong> Si no aceptas, no podrás participar y tu cuenta será suspendida.</p>
+                  {!blockingPrivacyNoConfirmed ? (
+                    <button type="button" onClick={() => setBlockingPrivacyNoConfirmed(true)} style={{ background: '#ef4444', color: 'white', padding: '8px 16px', fontSize: '0.85rem', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Estoy seguro, suspender mi cuenta</button>
+                  ) : (
+                    <p style={{ margin: 0, fontWeight: 600 }}>Has rechazado la política. Tu cuenta quedará suspendida.</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#0f172a' }}>2. Manejo de Transparencia (Zero Trust)</span>
+                <button type="button" onClick={() => setShowTransparencyModal(true)} className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '0.8rem', borderRadius: '4px' }}>Leer política</button>
+              </div>
+              <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
+                <label style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  <input type="radio" name="blocking-transparency" checked={blockingAcceptedTransparency === 'yes'} onChange={() => { setBlockingAcceptedTransparency('yes'); setBlockingTransparencyNoConfirmed(false); }} disabled={savingBlockingPolicies} style={{ transform: 'scale(1.2)' }} /> Sí acepto
+                </label>
+                <label style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  <input type="radio" name="blocking-transparency" checked={blockingAcceptedTransparency === 'no'} onChange={() => setBlockingAcceptedTransparency('no')} disabled={savingBlockingPolicies} style={{ transform: 'scale(1.2)' }} /> No acepto
+                </label>
+              </div>
+              {blockingAcceptedTransparency === 'no' && (
+                <div style={{ background: '#fef2f2', border: '1px solid #f87171', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginTop: '12px', fontSize: '0.85rem' }}>
+                  <p style={{ margin: '0 0 10px 0' }}><i className="fa-solid fa-triangle-exclamation"></i> <strong>Advertencia:</strong> Al seleccionar NO, tu cuenta será suspendida.</p>
+                  {!blockingTransparencyNoConfirmed ? (
+                    <button type="button" onClick={() => setBlockingTransparencyNoConfirmed(true)} style={{ background: '#ef4444', color: 'white', padding: '8px 16px', fontSize: '0.85rem', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Estoy seguro, suspender mi cuenta</button>
+                  ) : (
+                    <p style={{ margin: 0, fontWeight: 600 }}>Has rechazado la política de transparencia. El administrador te contactará para la devolución de tu dinero en dado caso que sea pertinente.</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <button 
+              className="btn btn-primary btn-block" 
+              disabled={savingBlockingPolicies || blockingAcceptedPrivacy !== 'yes' || blockingAcceptedTransparency !== 'yes'}
+              style={{ padding: '14px', fontSize: '1.05rem', fontWeight: 600, borderRadius: '8px' }}
+              onClick={async () => {
+                if (blockingAcceptedPrivacy === 'yes' && blockingAcceptedTransparency === 'yes') {
+                  setSavingBlockingPolicies(true);
+                  try {
+                    const res = await fetch('/api/auth/accept-policies', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ userId: currentUser.id })
+                    });
+                    if (res.ok) {
+                      showToast("Políticas aceptadas correctamente. ¡Bienvenido!", "success");
+                      setShowBlockingPolicyModal(false);
+                      // Update local storage
+                      const updatedUser = { ...currentUser, accepted_data_policy: true, accepted_transparency: true };
+                      setCurrentUser(updatedUser);
+                      localStorage.setItem('polla_user', JSON.stringify(updatedUser));
+                    } else {
+                      showToast("Error al guardar aceptación.", "error");
+                    }
+                  } catch (e) {
+                    showToast("Error de red.", "error");
+                  } finally {
+                    setSavingBlockingPolicies(false);
+                  }
+                }
+              }}
+            >
+              {savingBlockingPolicies ? <i className="fa-solid fa-circle-notch fa-spin"></i> : "Continuar en la Aplicación"}
+            </button>
+            {(blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') && (
+              <p style={{ color: '#ef4444', fontSize: '0.85rem', textAlign: 'center', marginTop: '15px' }}>
+                <i className="fa-solid fa-circle-exclamation"></i> Tu cuenta será suspendida al rechazar las políticas. Cierra la ventana del navegador.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Privacy Policy Modal (Read Only overlay) */}
+      {showPrivacyModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '30px', maxWidth: '700px', width: '100%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', color: '#1e293b', border: '1px solid #e2e8f0', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <h2 style={{ marginTop: 0, marginBottom: '20px', color: '#0284c7', fontSize: '1.4rem', fontWeight: 700 }}>Política de Privacidad y Tratamiento de Datos</h2>
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '15px', fontSize: '1.05rem', lineHeight: '1.7', color: '#334155' }}>
+              <p><strong>1. Finalidad del Tratamiento</strong><br/>La información suministrada será tratada con los siguientes fines específicos:<br/>- Administración y gestión operativa de la quiniela.<br/>- Comunicación directa con los participantes sobre actualizaciones del evento.<br/>- Resolución de consultas, reclamos o disputas sobre la puntuación del juego.</p>
+              <p><strong>2. Datos Recolectados</strong><br/>- Datos de Carácter Personal: Nombre (o Alias) y Correo Electrónico.<br/>- Datos de Juego: Pronósticos realizados y puntajes obtenidos (estos datos son asociados a tu Alias y no constituyen información sensible).</p>
+              <p><strong>3. Principio de Temporalidad</strong><br/>En cumplimiento del principio de limitación de plazo, los datos personales serán tratados únicamente por el tiempo necesario para cumplir con la finalidad del juego y el periodo de auditoría post-evento. La eliminación total y definitiva se ejecutará exactamente 30 días calendario después de la gran final de la Copa del Mundo 2026.</p>
+              <p><strong>4. Medidas de Seguridad</strong><br/>La información será almacenada en entornos digitales seguros. El acceso está restringido únicamente al administrador de la quiniela para fines exclusivos del desarrollo del juego.</p>
+              <p><strong>5. Derechos de los Titulares</strong><br/>Como participante, tienes derecho a:<br/>- Conocer, actualizar y rectificar tus datos.<br/>- Solicitar prueba de la autorización otorgada.<br/>- Solicitar la supresión de tus datos antes de que finalice el periodo de retención.</p>
+              <p><strong>6. Consentimiento</strong><br/>Al registrarte en esta quiniela, el participante declara que ha leído, comprendido y aceptado expresamente el tratamiento de sus datos personales bajo las condiciones aquí expuestas.</p>
+              <p><strong>7. Comunicación de Pronósticos</strong><br/>Como parte de la dinámica, se enviarán actualizaciones y resúmenes de pronósticos al correo registrado. El participante podrá optar por no recibir estas comunicaciones indicándolo a los organizadores sin que esto afecte su participación en la quiniela.</p>
+            </div>
+            <button onClick={() => setShowPrivacyModal(false)} className="btn btn-primary" style={{ marginTop: '24px', padding: '12px', fontSize: '1.1rem', fontWeight: 600, borderRadius: '8px' }}>Entendido, Volver</button>
+          </div>
+        </div>
+      )}
+
+      {/* Transparency Policy Modal (Read Only overlay) */}
+      {showTransparencyModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '30px', maxWidth: '700px', width: '100%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', color: '#1e293b', border: '1px solid #e2e8f0', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <h2 style={{ marginTop: 0, marginBottom: '20px', color: '#0284c7', fontSize: '1.4rem', fontWeight: 700 }}>Políticas de Transparencia (Zero Trust)</h2>
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '15px', fontSize: '1.05rem', lineHeight: '1.7', color: '#334155' }}>
+              <p>Para garantizar un juego 100% justo y libre de manipulaciones, hemos implementado una arquitectura <strong>Zero Trust</strong> (Cero Confianza), en la cual ni siquiera el administrador puede alterar los pronósticos una vez bloqueados.</p>
+              <p><strong>1. Envío de Correos Automáticos y Públicos</strong><br/>Antes de iniciar cada partido (exactamente 10 minutos antes, cuando se bloquea la plataforma), el sistema enviará automáticamente un correo electrónico a todos los participantes con una copia exacta e inmutable de todos los pronósticos registrados para ese partido. Así, todos tendrán en su buzón la evidencia real y nadie podrá cambiar su marcador.</p>
+              <p><strong>2. Bloqueo Inquebrantable de Partidos</strong><br/>A falta de 10 minutos para el silbatazo inicial, la base de datos bloquea permanentemente cualquier actualización de pronósticos para dicho partido. No existen puertas traseras ("backdoors") para eludir esta regla.</p>
+              <p><strong>3. Caché Estático y Público</strong><br/>Toda la tabla de posiciones y resultados utiliza una capa de Caché Estático Inmutable en la nube. Los puntajes y cálculos de aciertos exactos, diferencias y ganadores se realizan bajo reglas estrictas que no pueden modificarse manualmente.</p>
+              <p>Al aceptar esta política, declaras entender que <strong>Polla Mundialista 2026</strong> asegura la completa transparencia de tus datos y el desarrollo íntegro del torneo.</p>
+            </div>
+            <button onClick={() => setShowTransparencyModal(false)} className="btn btn-primary" style={{ marginTop: '24px', padding: '12px', fontSize: '1.1rem', fontWeight: 600, borderRadius: '8px' }}>Entendido, Volver</button>
+          </div>
         </div>
       )}
     </div>

@@ -89,7 +89,9 @@ export async function POST(request: Request) {
             points: 0,
             exact_matches: 0,
             winner_matches: 0,
-            diff_matches: 0
+            diff_matches: 0,
+            accepted_data_policy: true,
+            accepted_transparency: true
           })
           .select()
           .single();
@@ -122,7 +124,9 @@ export async function POST(request: Request) {
           points: 0,
           exact_matches: 0,
           winner_matches: 0,
-          diff_matches: 0
+          diff_matches: 0,
+          accepted_data_policy: true,
+          accepted_transparency: true
         };
         db.users.push(user);
         fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');

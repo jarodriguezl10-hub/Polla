@@ -11,9 +11,10 @@ export async function POST(request: Request) {
 
     // 1. Verify admin permissions
     let isAdmin = false;
+    const normalizedAdminEmail = adminEmail.trim().toLowerCase();
 
     if (isRealSupabase) {
-      const { data: adminUser } = await supabase.from('users').select('*').eq('email', adminEmail).single();
+      const { data: adminUser } = await supabase.from('users').select('*').ilike('email', normalizedAdminEmail).single();
       isAdmin = adminUser?.role === 'admin';
     } else {
       const fs = require('fs');
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
       const DB_PATH = path.join(process.cwd(), 'database.json');
       if (fs.existsSync(DB_PATH)) {
         const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-        const adminUser = db.users.find((u: any) => u.email === adminEmail);
+        const adminUser = db.users.find((u: any) => u.email.toLowerCase() === normalizedAdminEmail);
         isAdmin = adminUser?.role === 'admin';
       }
     }

@@ -12,10 +12,11 @@ export async function POST(request: Request) {
     }
 
     // Verify admin
-    let isAdmin = ADMIN_EMAILS.includes(adminEmail.trim().toLowerCase());
+    const normalizedAdminEmail = adminEmail.trim().toLowerCase();
+    let isAdmin = ADMIN_EMAILS.includes(normalizedAdminEmail);
     if (!isAdmin) {
       if (isRealSupabase) {
-        const { data: adminUser } = await supabase.from('users').select('role').eq('email', adminEmail.trim().toLowerCase()).single();
+        const { data: adminUser } = await supabase.from('users').select('role').ilike('email', normalizedAdminEmail).single();
         isAdmin = adminUser?.role === 'admin';
       } else {
         const fs = require('fs');
