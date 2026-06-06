@@ -12,14 +12,16 @@ export async function POST(request: Request) {
 
     // Check if user exists in the database
     let userExists = false;
+    let isRejected = false;
     if (isRealSupabase) {
-      const { data, error: dbErr } = await supabase.from('users').select('id').eq('email', email);
+      const { data, error: dbErr } = await supabase.from('users').select('id, role').eq('email', email);
       if (dbErr) {
         console.error("[AUTH] Error querying users:", dbErr.message);
         return NextResponse.json({ error: `Error de base de datos: ${dbErr.message}` }, { status: 500 });
       }
       if (data && data.length > 0) {
         userExists = true;
+        if (data[0].role === 'rejected') isRejected = true;
       }
     } else {
       // Local file-based fallback (dev only)
@@ -30,7 +32,10 @@ export async function POST(request: Request) {
         if (fs.existsSync(DB_PATH)) {
           const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
           const existing = db.users?.find((u: any) => u.email === email);
-          if (existing) userExists = true;
+          if (existing) {
+            userExists = true;
+            if (existing.role === 'rejected') isRejected = true;
+          }
         }
       } catch (fsErr) {
         console.error("[AUTH] Local DB error:", fsErr);
@@ -44,6 +49,10 @@ export async function POST(request: Request) {
         requiresName: true,
         message: "El correo no está registrado. Por favor, ingresa tu nombre."
       });
+    }
+
+    if (isRejected) {
+      return NextResponse.json({ error: "Tu cuenta ha sido suspendida por rechazar las políticas. Contacta al administrador." }, { status: 403 });
     }
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
