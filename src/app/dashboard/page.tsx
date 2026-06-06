@@ -2254,6 +2254,29 @@ export default function DashboardPage() {
                                 {adminLoading[match.id] ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-save"></i> Marcador</>}
                               </button>
                               
+                              {isLocked && (
+                                <button 
+                                  className="btn" 
+                                  style={{ fontSize: '0.8rem', padding: '6px 12px', background: '#334155', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                  onClick={async () => {
+                                    try {
+                                      const res = await fetch('/api/admin/send-audit-emails', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ matchId: match.id })
+                                      });
+                                      if(res.ok) showToast('Recibo enviado a ti y a Cristhian', 'success');
+                                      else showToast('Error al enviar el email: ' + (await res.json()).error, 'error');
+                                    } catch(e) {
+                                      showToast('Error de red al enviar el email', 'error');
+                                    }
+                                  }}
+                                  title="Enviar correo de auditoría con los pronósticos"
+                                >
+                                  <i className="fa-solid fa-envelope"></i> Audit
+                                </button>
+                              )}
+                              
                               {isElimination && (
                                 <button 
                                   className="btn btn-secondary" 
