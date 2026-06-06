@@ -73,6 +73,9 @@ export async function POST(request: Request) {
         .single();
 
       if (!fetchError && existingUser) {
+        if (existingUser.role === 'rejected') {
+          return NextResponse.json({ error: "Tu cuenta ha sido suspendida por rechazar las políticas. Contacta al administrador." }, { status: 403 });
+        }
         user = existingUser;
       } else {
         // Create user in real Supabase
@@ -110,6 +113,9 @@ export async function POST(request: Request) {
 
       let existingUser = db.users.find((u: any) => u.email === email);
       if (existingUser) {
+        if (existingUser.role === 'rejected') {
+          return NextResponse.json({ error: "Tu cuenta ha sido suspendida por rechazar las políticas. Contacta al administrador." }, { status: 403 });
+        }
         user = existingUser;
       } else {
         const defaultName = email.split('@')[0].replace(/[^a-zA-Z]/g, ' ');

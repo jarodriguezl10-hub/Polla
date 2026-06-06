@@ -2694,7 +2694,10 @@ export default function DashboardPage() {
                             }}
                           >
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0, flex: 1 }}>
-                              <strong style={{ fontSize: '0.85rem', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{u.name}</strong>
+                              <strong style={{ fontSize: '0.85rem', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                                {u.name}
+                                {u.role === 'rejected' && <span style={{ marginLeft: '6px', padding: '2px 4px', background: '#fef2f2', color: '#ef4444', border: '1px solid #f87171', borderRadius: '4px', fontSize: '0.65rem' }}>RECHAZÓ POLÍTICAS</span>}
+                              </strong>
                               <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{u.email}</span>
                             </div>
                             <div style={{ marginLeft: '10px', flexShrink: 0 }}>
@@ -2736,7 +2739,10 @@ export default function DashboardPage() {
                             }}
                           >
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0, flex: 1 }}>
-                              <strong style={{ fontSize: '0.85rem', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{u.name}</strong>
+                              <strong style={{ fontSize: '0.85rem', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                                {u.name}
+                                {u.role === 'rejected' && <span style={{ marginLeft: '6px', padding: '2px 4px', background: '#fef2f2', color: '#ef4444', border: '1px solid #f87171', borderRadius: '4px', fontSize: '0.65rem' }}>RECHAZÓ POLÍTICAS</span>}
+                              </strong>
                               <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{u.email}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: '10px' }}>
@@ -3066,30 +3072,11 @@ export default function DashboardPage() {
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
-            
-            <div className="segmented-control" style={{ width: '100%', marginBottom: '0', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, borderBottom: 'none' }}>
-              <button 
-                type="button"
-                className={`segment-btn ${chatInnerTab === 'chat' ? 'active' : ''}`}
-                onClick={() => setChatInnerTab('chat')}
-                style={{ flex: 1, padding: '8px', fontSize: '0.8rem' }}
-              >
-                Chat de la Polla
-              </button>
-              <button 
-                type="button"
-                className={`segment-btn ${chatInnerTab === 'notifications' ? 'active' : ''}`}
-                onClick={() => setChatInnerTab('notifications')}
-                style={{ flex: 1, padding: '8px', fontSize: '0.8rem' }}
-              >
-                Notificaciones
-              </button>
-            </div>
           </div>
 
-          <div className="floating-chat-messages">
+          <div className="floating-chat-messages" style={{ paddingTop: '10px' }}>
             {(() => {
-              const filteredChat = chatMessages.filter(m => chatInnerTab === 'notifications' ? m.user_name === '🤖 Notificación automática' : m.user_name !== '🤖 Notificación automática');
+              const filteredChat = chatMessages.filter(m => m.user_name !== '🤖 Notificación automática');
               
               if (filteredChat.length === 0) {
                 return (
@@ -3143,7 +3130,6 @@ export default function DashboardPage() {
             <div ref={chatBottomRef}></div>
           </div>
 
-          {chatInnerTab === 'chat' && (
             <form onSubmit={handleSendChat} className="floating-chat-input-bar" style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
               {replyTo && (
                 <div style={{ padding: '8px 12px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -3159,7 +3145,7 @@ export default function DashboardPage() {
                 </div>
               )}
               {selectedRecipients.length > 0 && (
-                <div className="chat-selected-recipients" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '6px 12px', background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                <div style={{ position: 'absolute', top: '-35px', left: '0', right: '0', display: 'flex', gap: '6px', overflowX: 'auto', padding: '4px 8px', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)', borderTopLeftRadius: '12px', borderTopRightRadius: '12px', zIndex: 10 }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}>Para:</span>
                   {selectedRecipients.map((user) => (
                     <span key={user.id} className="recipient-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(16,185,129,0.1)', color: 'var(--color-primary)', fontSize: '0.75rem', fontWeight: 600, padding: '2px 8px', borderRadius: '12px' }}>
@@ -3206,10 +3192,8 @@ export default function DashboardPage() {
                 </button>
               </div>
             </form>
-          )}
         </div>
       )}
-
       {/* Toast Notification */}
       {toast && (
         <div className={`toast ${toast.type}`}>
@@ -3275,20 +3259,26 @@ export default function DashboardPage() {
             </div>
 
             <button 
-              className="btn btn-block" 
+              className="btn btn-primary btn-block" 
               disabled={savingBlockingPolicies || (blockingAcceptedPrivacy !== 'yes' && blockingAcceptedPrivacy !== 'no') || (blockingAcceptedTransparency !== 'yes' && blockingAcceptedTransparency !== 'no') || (blockingAcceptedPrivacy === 'yes' && blockingAcceptedTransparency === 'no') || (blockingAcceptedPrivacy === 'no' && blockingAcceptedTransparency === 'yes')}
               style={{ 
                 padding: '14px', 
                 fontSize: '1.05rem', 
                 fontWeight: 600, 
                 borderRadius: '8px',
-                backgroundColor: (blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') ? '#f97316' : 'var(--color-primary)',
-                color: 'white',
-                border: 'none',
+                background: (blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') ? '#f97316' : '',
                 opacity: (savingBlockingPolicies || (blockingAcceptedPrivacy !== 'yes' && blockingAcceptedPrivacy !== 'no') || (blockingAcceptedTransparency !== 'yes' && blockingAcceptedTransparency !== 'no')) ? 0.6 : 1
               }}
               onClick={async () => {
                 if (blockingAcceptedPrivacy === 'no' || blockingAcceptedTransparency === 'no') {
+                  setSavingBlockingPolicies(true);
+                  try {
+                    await fetch('/api/auth/reject-policies', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ userId: currentUser.id })
+                    });
+                  } catch (e) {}
                   // Log out and redirect to home
                   localStorage.removeItem('polla_user');
                   router.push('/');
