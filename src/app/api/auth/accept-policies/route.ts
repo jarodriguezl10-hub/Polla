@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase } from '@/lib/supabaseClient';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(request: Request) {
   try {
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
       }
     }
 
+    revalidatePath('/api/leaderboard');
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error en accept-policies API:", error);
