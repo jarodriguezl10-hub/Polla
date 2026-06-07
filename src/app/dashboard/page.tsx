@@ -71,6 +71,13 @@ export default function DashboardPage() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [leaderboardSearch, setLeaderboardSearch] = useState('');
   const [scrollMatchId, setScrollMatchId] = useState<string | null>(null);
+
+  const getPolicyStatus = (u: any) => {
+    if (u.role === 'rejected') return 'rejected';
+    if (u.accepted_data_policy === true && u.accepted_transparency === true) return 'accepted';
+    return 'pending';
+  };
+
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatInnerTab, setChatInnerTab] = useState<'chat' | 'notifications'>('chat');
@@ -148,6 +155,7 @@ export default function DashboardPage() {
   const [selectedRecipients, setSelectedRecipients] = useState<any[]>([]);
   const [showMentionList, setShowMentionList] = useState(false);
   const [mentionFilter, setMentionFilter] = useState('');
+  const [policyFilter, setPolicyFilter] = useState<'all'|'accepted'|'rejected'|'pending'>('all');
 
   // Blocking Policies
   const [showBlockingPolicyModal, setShowBlockingPolicyModal] = useState(false);
@@ -943,6 +951,42 @@ export default function DashboardPage() {
       }
     } catch (e) {
       showToast('Error al conciliar pago', 'error');
+    }
+  };
+
+  const handleTriggerEmail = async (match: any) => {
+    if (match.emails_sent) {
+      if (!confirm("Este partido ya marcó 'Correo Enviado'. ¿Deseas forzar el reenvío de correos?")) {
+        return;
+      }
+    }
+    
+    // Si estamos en entorno local/pruebas, opcionalmente podemos enviar isTest=true
+    const isTest = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    setAdminLoading((prev) => ({ ...prev, [match.id]: true }));
+    try {
+      const res = await fetch('/api/admin/trigger-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          matchId: match.id,
+          adminEmail: currentUser.email,
+          isTest: isTest // En modo local solo envía al admin
+        })
+      });
+
+      if (res.ok) {
+        showToast('✅ Correo de auditoría enviado con éxito.', 'success');
+        loadAdminData(); // Para recargar el match.emails_sent
+      } else {
+        const data = await res.json();
+        showToast(data.error || 'Error enviando correo', 'error');
+      }
+    } catch (e) {
+      showToast('Error de red enviando correo', 'error');
+    } finally {
+      setAdminLoading((prev) => ({ ...prev, [match.id]: false }));
     }
   };
 
@@ -2302,6 +2346,21 @@ export default function DashboardPage() {
                                   {adminLoading[match.id] ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-people-group"></i> Guardar Equipos</>}
                                 </button>
                               )}
+
+                              <button 
+                                className="btn" 
+                                style={{ 
+                                  fontSize: '0.8rem', 
+                                  padding: '6px 12px',
+                                  backgroundColor: match.emails_sent ? '#bbf7d0' : 'var(--color-primary)',
+                                  color: match.emails_sent ? '#166534' : 'white',
+                                  border: match.emails_sent ? '1px solid #86efac' : 'none'
+                                }}
+                                onClick={() => handleTriggerEmail(match)}
+                                disabled={adminLoading[match.id]}
+                              >
+                                {adminLoading[match.id] ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-envelope"></i> {match.emails_sent ? 'Correo Enviado' : 'Enviar Correo'}</>}
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -2660,23 +2719,40 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Listas de Pagos side-by-side */}
+                {/* Filtro de Políticas y Listas de Pagos side-by-side */}
+                <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Filtro de Políticas:</span>
+                  <select 
+                    value={policyFilter} 
+                    onChange={(e) => setPolicyFilter(e.target.value as any)}
+                    className="payment-select"
+                    style={{ padding: '6px 12px', fontSize: '0.85rem', minWidth: '180px' }}
+                  >
+                    <option value="all">Todos los participantes</option>
+                    <option value="accepted">Aceptó Políticas</option>
+                    <option value="pending">Pendiente Aceptar</option>
+                    <option value="rejected">Rechazó Políticas</option>
+                  </select>
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                   {/* LISTA PENDIENTES */}
                   <div style={{ background: 'rgba(255,255,255,0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '12px', color: '#b91c1c', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>Inscripciones Pendientes ({leaderboard.filter(u => !u.paid).length})</span>
+                      <span>Inscripciones Pendientes ({leaderboard.filter(u => !u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length})</span>
                       <span style={{ fontSize: '0.72rem', fontWeight: 'normal', color: 'var(--color-text-muted)' }}>
                         Clic para pagar
                       </span>
                     </h4>
                     <div className="payment-list-scrollable" style={{ maxHeight: '320px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '2px' }}>
-                      {leaderboard.filter(u => !u.paid).length === 0 ? (
+                      {leaderboard.filter(u => !u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length === 0 ? (
                         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontStyle: 'italic', textAlign: 'center', margin: '20px 0' }}>
-                          ¡Todos los participantes han pagado! 🎉
+                          No hay participantes que coincidan.
                         </p>
                       ) : (
-                        leaderboard.filter(u => !u.paid).map(u => (
+                        leaderboard.filter(u => !u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).map(u => {
+                          const status = getPolicyStatus(u);
+                          return (
                           <div
                             key={u.id}
                             className="payment-row-item unpaid"
@@ -2696,7 +2772,9 @@ export default function DashboardPage() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0, flex: 1 }}>
                               <strong style={{ fontSize: '0.85rem', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                                 {u.name}
-                                {u.role === 'rejected' && <span style={{ marginLeft: '6px', padding: '2px 4px', background: '#fef2f2', color: '#ef4444', border: '1px solid #f87171', borderRadius: '4px', fontSize: '0.65rem' }}>RECHAZÓ POLÍTICAS</span>}
+                                {status === 'rejected' && <span style={{ marginLeft: '6px', padding: '2px 4px', background: '#fef2f2', color: '#ef4444', border: '1px solid #f87171', borderRadius: '4px', fontSize: '0.65rem' }}>RECHAZÓ POLÍTICAS</span>}
+                                {status === 'accepted' && <span style={{ marginLeft: '6px', padding: '2px 4px', background: '#dcfce7', color: '#15803d', border: '1px solid #86efac', borderRadius: '4px', fontSize: '0.65rem' }}>ACEPTÓ POLÍTICAS</span>}
+                                {status === 'pending' && <span style={{ marginLeft: '6px', padding: '2px 4px', background: '#fef9c3', color: '#a16207', border: '1px solid #fde047', borderRadius: '4px', fontSize: '0.65rem' }}>PENDIENTE ACEPTAR</span>}
                               </strong>
                               <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{u.email}</span>
                             </div>
@@ -2708,7 +2786,7 @@ export default function DashboardPage() {
                               )}
                             </div>
                           </div>
-                        ))
+                        );})
                       )}
                     </div>
                   </div>
@@ -2716,15 +2794,17 @@ export default function DashboardPage() {
                   {/* LISTA CONFIRMADOS */}
                   <div style={{ background: 'rgba(255,255,255,0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(34, 197, 94, 0.1)' }}>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '12px', color: '#15803d', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>Inscripciones Pagadas ({leaderboard.filter(u => u.paid).length})</span>
+                      <span>Inscripciones Pagadas ({leaderboard.filter(u => u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length})</span>
                     </h4>
                     <div className="payment-list-scrollable" style={{ maxHeight: '320px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '2px' }}>
-                      {leaderboard.filter(u => u.paid).length === 0 ? (
+                      {leaderboard.filter(u => u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length === 0 ? (
                         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontStyle: 'italic', textAlign: 'center', margin: '20px 0' }}>
-                          Ningún participante ha pagado aún.
+                          No hay participantes que coincidan.
                         </p>
                       ) : (
-                        leaderboard.filter(u => u.paid).map(u => (
+                        leaderboard.filter(u => u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).map(u => {
+                          const status = getPolicyStatus(u);
+                          return (
                           <div
                             key={u.id}
                             className="payment-row-item paid"
@@ -2741,7 +2821,9 @@ export default function DashboardPage() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0, flex: 1 }}>
                               <strong style={{ fontSize: '0.85rem', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                                 {u.name}
-                                {u.role === 'rejected' && <span style={{ marginLeft: '6px', padding: '2px 4px', background: '#fef2f2', color: '#ef4444', border: '1px solid #f87171', borderRadius: '4px', fontSize: '0.65rem' }}>RECHAZÓ POLÍTICAS</span>}
+                                {status === 'rejected' && <span style={{ marginLeft: '6px', padding: '2px 4px', background: '#fef2f2', color: '#ef4444', border: '1px solid #f87171', borderRadius: '4px', fontSize: '0.65rem' }}>RECHAZÓ POLÍTICAS</span>}
+                                {status === 'accepted' && <span style={{ marginLeft: '6px', padding: '2px 4px', background: '#dcfce7', color: '#15803d', border: '1px solid #86efac', borderRadius: '4px', fontSize: '0.65rem' }}>ACEPTÓ POLÍTICAS</span>}
+                                {status === 'pending' && <span style={{ marginLeft: '6px', padding: '2px 4px', background: '#fef9c3', color: '#a16207', border: '1px solid #fde047', borderRadius: '4px', fontSize: '0.65rem' }}>PENDIENTE ACEPTAR</span>}
                               </strong>
                               <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{u.email}</span>
                             </div>
@@ -2772,7 +2854,7 @@ export default function DashboardPage() {
                               </button>
                             </div>
                           </div>
-                        ))
+                        );})
                       )}
                     </div>
                   </div>
