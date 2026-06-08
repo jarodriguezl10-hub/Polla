@@ -141,14 +141,22 @@ export function calculatePredictionPoints(predA: number, predB: number, realA: n
   let points = 0;
   let exact = false;
   let winner = false;
-  let diff = false;
+
+  let exactGoalsCount = 0;
+
+  const correctHome = predA === realA;
+  const correctAway = predB === realB;
+
+  if (correctHome) {
+    exactGoalsCount += 1;
+  }
+  if (correctAway) {
+    exactGoalsCount += 1;
+  }
 
   if (predWinner === realWinner) {
     points += ptsWinner;
     winner = true;
-
-    const correctHome = predA === realA;
-    const correctAway = predB === realB;
 
     if (correctHome) points += ptsGoals;
     if (correctAway) points += ptsGoals;
@@ -157,7 +165,6 @@ export function calculatePredictionPoints(predA: number, predB: number, realA: n
     const realDiff = realA - realB;
     if (predDiff === realDiff) {
       points += ptsDiff;
-      diff = true;
     }
 
     if (correctHome && correctAway) {
@@ -165,11 +172,11 @@ export function calculatePredictionPoints(predA: number, predB: number, realA: n
     }
   } else {
     // Check local/visitor goals even if outcome is wrong
-    if (predA === realA) points += ptsGoals;
-    if (predB === realB) points += ptsGoals;
+    if (correctHome) points += ptsGoals;
+    if (correctAway) points += ptsGoals;
   }
 
-  return { points, exact, winner, diff };
+  return { points, exact, winner, diff: exactGoalsCount };
 }
 
 // Unified Mock Client matching Supabase syntax

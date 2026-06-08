@@ -1606,7 +1606,7 @@ export default function DashboardPage() {
               <div className="glass-panel metric-card">
                 <div className="metric-icon bg-purple"><i className="fa-solid fa-futbol"></i></div>
                 <div className="metric-data">
-                  <h3>{currentUser.exact_matches || 0}</h3>
+                  <h3>{currentUser.diff_matches || 0}</h3>
                   <p>Goles Exactos</p>
                 </div>
               </div>

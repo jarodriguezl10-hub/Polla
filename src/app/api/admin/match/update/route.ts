@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         const pointDiff = newStats.points - oldStats.points;
         const exactDiff = (newStats.exact ? 1 : 0) - (oldStats.exact ? 1 : 0);
         const winnerDiff = (newStats.winner ? 1 : 0) - (oldStats.winner ? 1 : 0);
-        const diffDiff = (newStats.diff ? 1 : 0) - (oldStats.diff ? 1 : 0);
+        const diffDiff = Number(newStats.diff || 0) - Number(oldStats.diff || 0);
 
         // If there's a difference, update the user
         if (pointDiff !== 0 || exactDiff !== 0 || winnerDiff !== 0 || diffDiff !== 0) {
@@ -135,7 +135,7 @@ export async function POST(request: Request) {
           const pointDiff = newStats.points - oldStats.points;
           const exactDiff = (newStats.exact ? 1 : 0) - (oldStats.exact ? 1 : 0);
           const winnerDiff = (newStats.winner ? 1 : 0) - (oldStats.winner ? 1 : 0);
-          const diffDiff = (newStats.diff ? 1 : 0) - (oldStats.diff ? 1 : 0);
+          const diffDiff = Number(newStats.diff || 0) - Number(oldStats.diff || 0);
 
           const user = db.users.find((u: any) => u.id === pred.user_id);
           if (user) {
