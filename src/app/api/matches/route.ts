@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase } from '@/lib/supabaseClient';
 
-export const revalidate = 31536000; // Cache for 1 year (Infinite Cache until revalidated)
+export const revalidate = 60; // Cache on Vercel Edge for 60 seconds
 
 export async function GET() {
   try {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase, isRealSupabase } from '@/lib/supabaseClient';
+import { revalidatePath } from 'next/cache';
 
 const ADMIN_EMAILS = ['jarodriguezl10@gmail.com', 'jrodriguezl10@gmail.com', 'mario.montalvo@gmail.com', 'cristhiancamilo@gmail.com'];
 
@@ -59,6 +60,9 @@ export async function POST(request: Request) {
         }
       }
     }
+
+    revalidatePath('/api/leaderboard');
+    revalidatePath('/dashboard');
 
     return NextResponse.json({ success: true });
   } catch (error) {
