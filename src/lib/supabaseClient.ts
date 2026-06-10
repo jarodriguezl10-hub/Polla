@@ -2,13 +2,16 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 export const isRealSupabase = supabaseUrl !== '' && supabaseAnonKey !== '';
 
 // Real Supabase Client
 let realClient: any = null;
 if (isRealSupabase) {
-  realClient = createClient(supabaseUrl, supabaseAnonKey);
+  // Use Service Role Key if available (Server-Side), otherwise fallback to Anon Key
+  const activeKey = supabaseServiceKey !== '' ? supabaseServiceKey : supabaseAnonKey;
+  realClient = createClient(supabaseUrl, activeKey);
 }
 
 // Local File Database Mock for Server Side Fallback (matching Supabase API shapes)
