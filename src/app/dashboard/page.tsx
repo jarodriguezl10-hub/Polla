@@ -1190,17 +1190,20 @@ export default function DashboardPage() {
       });
       if (!res.ok) {
         setRegistrationOpen(!newState);
-        alert('Error al guardar el estado del registro');
+        showToast('Error al guardar el estado del registro', 'error');
+      } else {
+        showToast(`Registro ${newState ? 'abierto' : 'cerrado'} exitosamente`, 'success');
       }
     } catch(e) {
       setRegistrationOpen(!newState);
+      showToast('Error de red', 'error');
     }
   };
 
   const handleDisableUser = async () => {
     if (!selectedUserToDisable) return;
     if (!selectedUserToDisable.is_disabled && !disableReasonText.trim()) {
-      alert("Debes ingresar un motivo para inhabilitar al usuario.");
+      showToast("Debes ingresar un motivo para inhabilitar al usuario.", 'error');
       return;
     }
     
@@ -1220,18 +1223,24 @@ export default function DashboardPage() {
       });
       
       if (res.ok) {
-        alert(`Usuario ${newStatus ? 'inhabilitado' : 'habilitado'} exitosamente`);
-        // We need to fetch leaderboard again
-        fetchLeaderboard();
+        showToast(`Usuario ${newStatus ? 'inhabilitado' : 'habilitado'} exitosamente`, 'success');
+        
+        // Inline fetch leaderboard to update
+        fetch('/api/leaderboard')
+          .then(r => r.json())
+          .then(data => {
+            if (Array.isArray(data)) setLeaderboard(data);
+          }).catch(e => console.error(e));
+          
         setSelectedUserToDisable(null);
         setDisableSearch('');
         setDisableReasonText('');
       } else {
         const data = await res.json();
-        alert(`Error: ${data.error}`);
+        showToast(`Error: ${data.error}`, 'error');
       }
     } catch(e) {
-      alert("Error de red");
+      showToast("Error de red", 'error');
     } finally {
       setIsDisabling(false);
     }
