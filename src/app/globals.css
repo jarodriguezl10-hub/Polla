@@ -1591,10 +1591,10 @@ body {
         border-radius: 16px !important;
     }
     .filter-group {
-        flex-direction: column !important;
-        align-items: stretch !important;
+        flex-direction: row !important;
+        align-items: center !important;
         width: 100% !important;
-        gap: 6px !important;
+        gap: 12px !important;
     }
     .segmented-control {
         width: 100% !important;
