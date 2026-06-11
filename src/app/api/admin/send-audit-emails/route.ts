@@ -23,8 +23,8 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "El correo ya fue enviado para este partido" }, { status: 400 });
       }
 
-      const { data: uData } = await supabase.from('users').select('id, name, email, points, diff_matches, winner_matches, exact_matches, created_at, receive_emails');
-      users = uData || [];
+      const { data: uData } = await supabase.from('users').select('id, name, email, points, diff_matches, winner_matches, exact_matches, created_at, receive_emails, is_disabled');
+      users = (uData || []).filter((u: any) => !u.is_disabled);
 
       const { data: pData } = await supabase.from('predictions').select('user_id, score_a, score_b, created_at').eq('match_id', matchId);
       predictions = pData || [];
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       if (match.emails_sent) {
         return NextResponse.json({ error: "El correo ya fue enviado para este partido" }, { status: 400 });
       }
-      users = db.users || [];
+      users = (db.users || []).filter((u: any) => !u.is_disabled);
       predictions = (db.predictions || []).filter((p: any) => p.match_id === matchId);
     }
 

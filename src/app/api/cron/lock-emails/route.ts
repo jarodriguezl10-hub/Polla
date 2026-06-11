@@ -39,13 +39,14 @@ export async function GET(request: Request) {
     }
 
     // 2. Fetch users who WANT emails (receive_emails = true)
-    const { data: users, error: uErr } = await supabase
+    let { data: users, error: uErr } = await supabase
       .from('users')
-      .select('id, name, email, points, diff_matches, winner_matches, exact_matches, created_at, receive_emails')
+      .select('id, name, email, points, diff_matches, winner_matches, exact_matches, created_at, receive_emails, is_disabled')
       .neq('receive_emails', false); // Get true or null
     
     if (uErr) throw uErr;
     if (!users || users.length === 0) return NextResponse.json({ message: "No subscribers" });
+    users = users.filter((u: any) => !u.is_disabled);
 
     // 3. Setup Nodemailer
     const transporter = nodemailer.createTransport({
@@ -74,8 +75,8 @@ export async function GET(request: Request) {
       let rowsHtml = '';
       
       // Sort all users (even those who don't receive emails, for the table)
-      const { data: allUsers } = await supabase.from('users').select('id, name, points, diff_matches, winner_matches, exact_matches, created_at');
-      const tableUsers = allUsers || [];
+      const { data: allUsers } = await supabase.from('users').select('id, name, points, diff_matches, winner_matches, exact_matches, created_at, is_disabled');
+      const tableUsers = (allUsers || []).filter((u: any) => !u.is_disabled);
 
       const sortedUsers = [...tableUsers].sort((a: any, b: any) => {
         const pointsDiff = (b.points || 0) - (a.points || 0);
