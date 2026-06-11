@@ -1398,11 +1398,13 @@ export default function DashboardPage() {
   });
 
   // Find current user's position in the leaderboard
+  const activeLeaderboard = leaderboard.filter(u => !u.is_disabled);
+
   const getUserRank = () => {
-    if (!leaderboard || leaderboard.length === 0 || !currentUser) {
+    if (!activeLeaderboard || activeLeaderboard.length === 0 || !currentUser) {
       return null;
     }
-    const index = leaderboard.findIndex((u) => u.id === currentUser.id);
+    const index = activeLeaderboard.findIndex((u) => u.id === currentUser.id);
     if (index === -1) return null;
     const rank = index + 1;
     if (rank === 1) return "🥇";
@@ -1483,7 +1485,7 @@ export default function DashboardPage() {
     return sorted;
   };
 
-  const activeLeaderboard = leaderboard.filter(u => !u.is_disabled);
+  
   const filteredMentionUsers = activeLeaderboard
     .filter((u: any) => u.id !== currentUser?.id)
     .filter((u: any) => (u.name || '').toLowerCase().includes(mentionFilter.toLowerCase()))
@@ -2130,7 +2132,7 @@ export default function DashboardPage() {
 
                     return filtered.map((player) => {
                       // Find rank in the full sorted leaderboard (1-based index)
-                      const rank = leaderboard.findIndex(u => u.id === player.id) + 1;
+                      const rank = activeLeaderboard.findIndex((u) => u.id === player.id) + 1;
                       let rankDisp: any = rank.toString();
                       if (rank === 1) rankDisp = '🥇';
                       else if (rank === 2) rankDisp = '🥈';
