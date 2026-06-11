@@ -102,6 +102,7 @@ export default function DashboardPage() {
   // Filter States
   const [predictionFilter, setPredictionFilter] = useState('all');
   const [stateFilter, setStateFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState<'date' | 'group'>('date');
 
   // Admin scores & teams states
   const [adminScores, setAdminScores] = useState<{ [key: string]: { scoreA: string; scoreB: string } }>({});
@@ -1252,6 +1253,36 @@ export default function DashboardPage() {
     if (stateFilter === 'locked' && (!isLocked || m.played)) return false;
     if (stateFilter === 'finished' && (!m.played)) return false;
     return true;
+  }).sort((a, b) => {
+    const timeA = new Date(a.kickoff_utc || a.date).getTime();
+    const timeB = new Date(b.kickoff_utc || b.date).getTime();
+    
+    if (sortOrder === 'group') {
+      const groupA = a.group_name || a.group || '';
+      const groupB = b.group_name || b.group || '';
+      
+      const phaseOrder: Record<string, number> = {
+        'Round of 32': 100,
+        'Round of 16': 101,
+        'Quarter-final': 102,
+        'Semi-final': 103,
+        'Match for third place': 104,
+        'Final': 105
+      };
+
+      const orderA = phaseOrder[groupA] || 0;
+      const orderB = phaseOrder[groupB] || 0;
+
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+
+      if (groupA < groupB) return -1;
+      if (groupA > groupB) return 1;
+      return timeA - timeB;
+    } else {
+      return timeA - timeB;
+    }
   });
 
   const adminFilteredMatches = matches.filter(match => {
@@ -1743,42 +1774,64 @@ export default function DashboardPage() {
           <section className="tab-pane active">
             <div className="section-header">
               <h2>Mis Pronósticos</h2>
-              <p>Predice los marcadores del Mundial 2026. Recuerda que se bloquean 10 minutos antes del inicio.</p>
+              <p>Predice los marcadores del Mundial 2026. Recuerda que se bloquean <span style={{ color: '#e63946', fontWeight: '900', fontSize: '1.25em', padding: '2px 6px', background: 'rgba(230, 57, 70, 0.1)', borderRadius: '6px', display: 'inline-block', transform: 'scale(1.05)' }}>10 minutos</span> antes del inicio.</p>
             </div>
 
             {/* Filters panel */}
             <div className="glass-panel predictions-filters">
-              <div className="filter-group">
-                <span className="filter-label"><i className="fa-solid fa-filter"></i> Filtro:</span>
-                <div className="segmented-control">
-                  <button 
-                    type="button"
-                    className={`segment-btn ${stateFilter === 'all' ? 'active' : ''}`}
-                    onClick={() => setStateFilter('all')}
-                  >
-                    Todos
-                  </button>
-                  <button 
-                    type="button"
-                    className={`segment-btn ${stateFilter === 'open' ? 'active' : ''}`}
-                    onClick={() => setStateFilter('open')}
-                  >
-                    Abiertos
-                  </button>
-                  <button 
-                    type="button"
-                    className={`segment-btn ${stateFilter === 'locked' ? 'active' : ''}`}
-                    onClick={() => setStateFilter('locked')}
-                  >
-                    Bloqueados
-                  </button>
-                  <button 
-                    type="button"
-                    className={`segment-btn ${stateFilter === 'finished' ? 'active' : ''}`}
-                    onClick={() => setStateFilter('finished')}
-                  >
-                    Finalizados
-                  </button>
+              <div className="filter-sort-container">
+                <div className="filter-group">
+                  <span className="filter-label"><i className="fa-solid fa-filter"></i> <span className="filter-text">Filtro:</span></span>
+                  <div className="segmented-control">
+                    <button 
+                      type="button"
+                      className={`segment-btn ${stateFilter === 'all' ? 'active' : ''}`}
+                      onClick={() => setStateFilter('all')}
+                    >
+                      Todos
+                    </button>
+                    <button 
+                      type="button"
+                      className={`segment-btn ${stateFilter === 'open' ? 'active' : ''}`}
+                      onClick={() => setStateFilter('open')}
+                    >
+                      Abiertos
+                    </button>
+                    <button 
+                      type="button"
+                      className={`segment-btn ${stateFilter === 'locked' ? 'active' : ''}`}
+                      onClick={() => setStateFilter('locked')}
+                    >
+                      Bloqueados
+                    </button>
+                    <button 
+                      type="button"
+                      className={`segment-btn ${stateFilter === 'finished' ? 'active' : ''}`}
+                      onClick={() => setStateFilter('finished')}
+                    >
+                      Finalizados
+                    </button>
+                  </div>
+                </div>
+
+                <div className="filter-group">
+                  <span className="filter-label"><i className="fa-solid fa-sort"></i> <span className="filter-text">Ordenar:</span></span>
+                  <div className="segmented-control">
+                    <button 
+                      type="button"
+                      className={`segment-btn ${sortOrder === 'date' ? 'active' : ''}`}
+                      onClick={() => setSortOrder('date')}
+                    >
+                      Por fecha
+                    </button>
+                    <button 
+                      type="button"
+                      className={`segment-btn ${sortOrder === 'group' ? 'active' : ''}`}
+                      onClick={() => setSortOrder('group')}
+                    >
+                      Por grupo
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
