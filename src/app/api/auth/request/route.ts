@@ -13,8 +13,22 @@ export async function POST(request: Request) {
     // Check if user exists in the database
     let userExists = false;
     let isRejected = false;
+    let isDisabled = false;
+    let disableReason = '';
+    let registrationOpen = true;
+
     if (isRealSupabase) {
-      const { data, error: dbErr } = await supabase.from('users').select('id, role').eq('email', email);
+      // Check registration setting
+      try {
+        const { data: settingsData } = await supabase.from('settings').select('*').eq('key', 'registration_open');
+        if (settingsData && settingsData.length > 0) {
+          registrationOpen = settingsData[0].value === true || settingsData[0].value === 'true';
+        }
+      } catch(e) {
+        // Table might not exist yet during migration
+      }
+
+      const { data, error: dbErr } = await supabase.from('users').select('id, role, is_disabled, disable_reason').eq('email', email);
       if (dbErr) {
         console.error("[AUTH] Error querying users:", dbErr.message);
         return NextResponse.json({ error: `Error de base de datos: ${dbErr.message}` }, { status: 500 });
@@ -22,6 +36,10 @@ export async function POST(request: Request) {
       if (data && data.length > 0) {
         userExists = true;
         if (data[0].role === 'rejected') isRejected = true;
+        if (data[0].is_disabled === true) {
+          isDisabled = true;
+          disableReason = data[0].disable_reason || 'Decisión administrativa';
+        }
       }
     } else {
       // Local file-based fallback (dev only)
@@ -35,11 +53,23 @@ export async function POST(request: Request) {
           if (existing) {
             userExists = true;
             if (existing.role === 'rejected') isRejected = true;
+            if (existing.is_disabled) {
+              isDisabled = true;
+              disableReason = existing.disable_reason || 'Decisión administrativa';
+            }
           }
         }
       } catch (fsErr) {
         console.error("[AUTH] Local DB error:", fsErr);
       }
+    }
+
+    if (!userExists && !registrationOpen) {
+      return NextResponse.json({ error: "Validar tu correo ya que no existe el registro, en caso que desees registrarte ya fue cerrada la polla del mundial 2026." }, { status: 403 });
+    }
+
+    if (isDisabled) {
+      return NextResponse.json({ error: `Tu cuenta ha sido inhabilitada por: ${disableReason}. Contacta al administrador.` }, { status: 403 });
     }
 
     // If user does not exist and name is not provided, prompt client to ask for it

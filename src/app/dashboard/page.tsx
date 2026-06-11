@@ -114,6 +114,13 @@ export default function DashboardPage() {
   const [emailPreferences, setEmailPreferences] = useState<{ [key: string]: boolean }>({});
   const [emailPreferencesSaving, setEmailPreferencesSaving] = useState(false);
 
+  // Admin Access Management States
+  const [registrationOpen, setRegistrationOpen] = useState(true);
+  const [disableSearch, setDisableSearch] = useState('');
+  const [disableReasonText, setDisableReasonText] = useState('');
+  const [selectedUserToDisable, setSelectedUserToDisable] = useState<any>(null);
+  const [isDisabling, setIsDisabling] = useState(false);
+
   // Admin payment states
   const [selectedUnpaidUserId, setSelectedUnpaidUserId] = useState('');
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -188,6 +195,17 @@ export default function DashboardPage() {
               prefs[u.id] = u.receive_emails !== false;
             });
             setEmailPreferences(prefs);
+            
+            // Also fetch settings if admin
+            if (parsed.role === 'admin') {
+              fetch('/api/admin/settings')
+                .then(res => res.json())
+                .then(sData => {
+                  if (sData && typeof sData.registration_open === 'boolean') {
+                    setRegistrationOpen(sData.registration_open);
+                  }
+                }).catch(e => console.error(e));
+            }
 
           } else {
             console.error("Leaderboard no es un array:", data);
@@ -1161,6 +1179,64 @@ export default function DashboardPage() {
     }
   };
 
+  const toggleRegistration = async () => {
+    const newState = !registrationOpen;
+    setRegistrationOpen(newState);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminEmail: currentUser?.email, registrationOpen: newState })
+      });
+      if (!res.ok) {
+        setRegistrationOpen(!newState);
+        alert('Error al guardar el estado del registro');
+      }
+    } catch(e) {
+      setRegistrationOpen(!newState);
+    }
+  };
+
+  const handleDisableUser = async () => {
+    if (!selectedUserToDisable) return;
+    if (!selectedUserToDisable.is_disabled && !disableReasonText.trim()) {
+      alert("Debes ingresar un motivo para inhabilitar al usuario.");
+      return;
+    }
+    
+    setIsDisabling(true);
+    const newStatus = !selectedUserToDisable.is_disabled;
+    
+    try {
+      const res = await fetch('/api/admin/user/disable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminEmail: currentUser?.email,
+          userId: selectedUserToDisable.id,
+          isDisabled: newStatus,
+          disableReason: disableReasonText
+        })
+      });
+      
+      if (res.ok) {
+        alert(`Usuario ${newStatus ? 'inhabilitado' : 'habilitado'} exitosamente`);
+        // We need to fetch leaderboard again
+        fetchLeaderboard();
+        setSelectedUserToDisable(null);
+        setDisableSearch('');
+        setDisableReasonText('');
+      } else {
+        const data = await res.json();
+        alert(`Error: ${data.error}`);
+      }
+    } catch(e) {
+      alert("Error de red");
+    } finally {
+      setIsDisabling(false);
+    }
+  };
+
   if (!currentUser) return null;
 
   // Next match display calculations
@@ -1398,13 +1474,14 @@ export default function DashboardPage() {
     return sorted;
   };
 
-  const filteredMentionUsers = leaderboard
+  const activeLeaderboard = leaderboard.filter(u => !u.is_disabled);
+  const filteredMentionUsers = activeLeaderboard
     .filter((u: any) => u.id !== currentUser?.id)
     .filter((u: any) => (u.name || '').toLowerCase().includes(mentionFilter.toLowerCase()))
     .sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
 
-  const pagadasCount = leaderboard.filter(u => u.paid).length;
-  const pendientesCount = leaderboard.filter(u => !u.paid).length;
+  const pagadasCount = activeLeaderboard.filter(u => u.paid).length;
+  const pendientesCount = activeLeaderboard.filter(u => !u.paid).length;
   const sinConciliarCount = unconciliatedPayments.filter(p => !p.conciliated).length;
   const conciliadoCount = unconciliatedPayments.filter(p => p.conciliated).length;
   const totalRecaudoVal = (pagadasCount * 100000) + (sinConciliarCount * 100000);
@@ -2030,7 +2107,7 @@ export default function DashboardPage() {
                       <td colSpan={3} className="text-center py-4 text-muted">Cargando clasificación...</td>
                     </tr>
                   ) : (() => {
-                    const filtered = leaderboard.filter(player =>
+                    const filtered = activeLeaderboard.filter(player =>
                       (player.name || '').toLowerCase().includes(leaderboardSearch.toLowerCase())
                     );
                     
@@ -2424,6 +2501,92 @@ export default function DashboardPage() {
               </div>
 
               <div className="admin-side-column" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* GESTIÓN DE ACCESO */}
+                <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <h3><i className="fa-solid fa-user-shield" style={{ color: '#ef4444', marginRight: '6px' }}></i> Gestión de Acceso</h3>
+                  <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '16px' }}>
+                    Abre/Cierra inscripciones globales o inhabilita usuarios específicos.
+                  </p>
+                  
+                  {/* Toggle Registro */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.5)', padding: '12px', borderRadius: '8px', marginBottom: '16px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <div>
+                      <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-text)' }}>Permitir nuevos registros</span>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0 }}>Si se desactiva, nadie podrá registrarse.</p>
+                    </div>
+                    <button 
+                      onClick={toggleRegistration}
+                      style={{ 
+                        background: registrationOpen ? '#22c55e' : '#ef4444', 
+                        color: 'white', border: 'none', borderRadius: '20px', 
+                        padding: '6px 16px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer',
+                        transition: 'background 0.3s'
+                      }}
+                    >
+                      {registrationOpen ? 'ABIERTO' : 'CERRADO'}
+                    </button>
+                  </div>
+
+                  {/* Disable User */}
+                  <div style={{ background: 'rgba(255,255,255,0.5)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-text)', display: 'block', marginBottom: '8px' }}>Inhabilitar Usuario</span>
+                    <input 
+                      type="text" 
+                      className="admin-search-input" 
+                      placeholder="Buscar por nombre o correo..."
+                      value={disableSearch}
+                      onChange={(e) => setDisableSearch(e.target.value)}
+                      style={{ width: '100%', marginBottom: '8px' }}
+                    />
+                    
+                    {disableSearch && !selectedUserToDisable && (
+                      <div style={{ maxHeight: '120px', overflowY: 'auto', background: 'white', borderRadius: '6px', border: '1px solid #e2e8f0', marginBottom: '8px' }}>
+                        {leaderboard
+                          .filter((u: any) => u.name.toLowerCase().includes(disableSearch.toLowerCase()) || u.email.toLowerCase().includes(disableSearch.toLowerCase()))
+                          .slice(0, 5)
+                          .map((u: any) => (
+                            <div 
+                              key={u.id} 
+                              onClick={() => { setSelectedUserToDisable(u); setDisableSearch(''); }}
+                              style={{ padding: '8px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between' }}
+                            >
+                              <span>{u.name} <span style={{color: '#94a3b8'}}>{u.email}</span></span>
+                              {u.is_disabled && <span style={{color: '#ef4444', fontWeight: 'bold'}}>Inhabilitado</span>}
+                            </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {selectedUserToDisable && (
+                      <div style={{ background: 'white', padding: '12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <strong style={{ fontSize: '0.85rem' }}>{selectedUserToDisable.name}</strong>
+                          <button onClick={() => setSelectedUserToDisable(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><i className="fa-solid fa-times"></i></button>
+                        </div>
+                        <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '12px' }}>{selectedUserToDisable.email}</span>
+                        
+                        {!selectedUserToDisable.is_disabled && (
+                          <textarea 
+                            value={disableReasonText}
+                            onChange={(e) => setDisableReasonText(e.target.value)}
+                            placeholder="Motivo de la inhabilitación..."
+                            style={{ width: '100%', padding: '8px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #cbd5e1', marginBottom: '12px', minHeight: '60px', fontFamily: 'inherit' }}
+                          />
+                        )}
+                        
+                        <button 
+                          className={`btn ${selectedUserToDisable.is_disabled ? 'btn-primary' : 'btn-secondary'}`}
+                          style={{ width: '100%', fontSize: '0.85rem', background: selectedUserToDisable.is_disabled ? '#22c55e' : '#ef4444', borderColor: selectedUserToDisable.is_disabled ? '#22c55e' : '#ef4444' }}
+                          onClick={handleDisableUser}
+                          disabled={isDisabling}
+                        >
+                          {isDisabling ? <i className="fa-solid fa-spinner fa-spin"></i> : selectedUserToDisable.is_disabled ? 'Habilitar Usuario' : 'Inhabilitar Usuario'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* 1.5 NOTIFICACIONES DE AUDITORÍA */}
                 <div className="glass-panel" style={{ maxHeight: '400px', display: 'flex', flexDirection: 'column' }}>
                   <h3><i className="fa-solid fa-envelope" style={{ color: '#0ea5e9', marginRight: '6px' }}></i> Notificaciones de Auditoría</h3>
@@ -2457,7 +2620,7 @@ export default function DashboardPage() {
                   </div>
 
                   <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--glass-border)', borderRadius: '6px', padding: '8px', marginBottom: '10px', backgroundColor: 'rgba(0,0,0,0.02)' }}>
-                    {leaderboard.map((u: any) => (
+                    {activeLeaderboard.map((u: any) => (
                       <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{u.name}</span>
@@ -2751,7 +2914,7 @@ export default function DashboardPage() {
                       disabled={paymentLoading}
                     >
                       <option value="">Selecciona un participante...</option>
-                      {leaderboard.filter(u => !u.paid).map(u => (
+                      {activeLeaderboard.filter(u => !u.paid).map(u => (
                         <option key={u.id} value={u.id}>
                           {u.name} ({u.email})
                         </option>
@@ -2792,18 +2955,18 @@ export default function DashboardPage() {
                   {/* LISTA PENDIENTES */}
                   <div style={{ background: 'rgba(255,255,255,0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '12px', color: '#b91c1c', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>Inscripciones Pendientes ({leaderboard.filter(u => !u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length})</span>
+                      <span>Inscripciones Pendientes ({activeLeaderboard.filter(u => !u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length})</span>
                       <span style={{ fontSize: '0.72rem', fontWeight: 'normal', color: 'var(--color-text-muted)' }}>
                         Clic para pagar
                       </span>
                     </h4>
                     <div className="payment-list-scrollable" style={{ maxHeight: '320px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '2px' }}>
-                      {leaderboard.filter(u => !u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length === 0 ? (
+                      {activeLeaderboard.filter(u => !u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length === 0 ? (
                         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontStyle: 'italic', textAlign: 'center', margin: '20px 0' }}>
                           No hay participantes que coincidan.
                         </p>
                       ) : (
-                        leaderboard.filter(u => !u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).map(u => {
+                        activeLeaderboard.filter(u => !u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).map(u => {
                           const status = getPolicyStatus(u);
                           return (
                           <div
@@ -2847,15 +3010,15 @@ export default function DashboardPage() {
                   {/* LISTA CONFIRMADOS */}
                   <div style={{ background: 'rgba(255,255,255,0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(34, 197, 94, 0.1)' }}>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '12px', color: '#15803d', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>Inscripciones Pagadas ({leaderboard.filter(u => u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length})</span>
+                      <span>Inscripciones Pagadas ({activeLeaderboard.filter(u => u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length})</span>
                     </h4>
                     <div className="payment-list-scrollable" style={{ maxHeight: '320px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '2px' }}>
-                      {leaderboard.filter(u => u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length === 0 ? (
+                      {activeLeaderboard.filter(u => u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).length === 0 ? (
                         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontStyle: 'italic', textAlign: 'center', margin: '20px 0' }}>
                           No hay participantes que coincidan.
                         </p>
                       ) : (
-                        leaderboard.filter(u => u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).map(u => {
+                        activeLeaderboard.filter(u => u.paid && (policyFilter === 'all' || getPolicyStatus(u) === policyFilter)).map(u => {
                           const status = getPolicyStatus(u);
                           return (
                           <div

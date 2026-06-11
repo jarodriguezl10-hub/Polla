@@ -12,7 +12,7 @@ export async function GET(request: Request) {
       // 1. Obtener todos los usuarios con sus stats de puntos
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('id, name, email, role, points, diff_matches, winner_matches, exact_matches, paid, created_at, receive_emails, accepted_data_policy, accepted_transparency');
+        .select('id, name, email, role, points, diff_matches, winner_matches, exact_matches, paid, created_at, receive_emails, accepted_data_policy, accepted_transparency, is_disabled');
       
       if (userError) throw new Error("Supabase users fetch failed");
       users = userData || [];
