@@ -59,7 +59,7 @@ export async function GET(request: Request) {
       },
     });
 
-    const bccEmails = users.filter((u: any) => u.email).map((u: any) => u.email).join(',');
+    const allEmails = users.filter((u: any) => u.email).map((u: any) => u.email);
     let sentCount = 0;
 
     // 4. Procesar cada partido bloqueado
@@ -143,12 +143,18 @@ export async function GET(request: Request) {
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Polla Mundial 2026" <noreply@pollamundial.com>',
         to: 'noreply@pollamundial.com', // Se envía a un noreply
-        bcc: bccEmails, // Copia oculta a todos los participantes con receive_emails = true
         subject: `🔒 Auditoría Cerrada: Pronósticos ${match.team_a} vs ${match.team_b}`,
         html: htmlContent,
       };
 
-      await transporter.sendMail(mailOptions);
+      const chunkSize = 80;
+      for (let i = 0; i < allEmails.length; i += chunkSize) {
+        const chunk = allEmails.slice(i, i + chunkSize);
+        await transporter.sendMail({
+          ...mailOptions,
+          bcc: chunk.join(',')
+        });
+      }
       sentCount++;
 
       // Marcar partido como enviado

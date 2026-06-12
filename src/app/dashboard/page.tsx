@@ -2038,23 +2038,7 @@ export default function DashboardPage() {
                             </button>
                           ) : (
                             <>
-                              {aiPredictions[match.id] ? null : (
-                                <button 
-                                  className="btn btn-ai-predict" 
-                                  onClick={() => handleConsultAI(match.id)}
-                                  disabled={aiLoading[match.id]}
-                                >
-                                  {aiLoading[match.id] ? (
-                                    <>
-                                      <i className="fa-solid fa-spinner fa-spin"></i> Consultando...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <i className="fa-solid fa-wand-magic-sparkles"></i> Consultar IA
-                                    </>
-                                  )}
-                                </button>
-                              )}
+
                               <span className="save-status-msg" style={{ display: predA !== null ? 'inline-flex' : 'none' }}>
                                 <i className="fa-solid fa-circle-check text-green"></i> Se guardó el pronóstico
                               </span>

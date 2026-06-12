@@ -42,8 +42,8 @@ export async function POST(request: Request) {
       predictions = (db.predictions || []).filter((p: any) => p.match_id === matchId);
     }
 
-    // Prepare BCC list
-    const bccEmails = users.filter((u: any) => u.email && u.receive_emails !== false).map((u: any) => u.email).join(',');
+    // Prepare email list
+    const allEmails = users.filter((u: any) => u.email && u.receive_emails !== false).map((u: any) => u.email);
 
     // 2. Format HTML table with all predictions
     let rowsHtml = '';
@@ -124,13 +124,19 @@ export async function POST(request: Request) {
     const mailOptions = {
       from: process.env.SMTP_FROM || '"Polla Mundial 2026" <noreply@pollamundial.com>',
       to: 'jarodriguezl10@gmail.com, cristhiancamilo@gmail.com', // Administradores directos
-      bcc: bccEmails, // Todos los usuarios suscritos en copia oculta
       subject: `🔒 Auditoría: Pronósticos ${match.team_a} vs ${match.team_b}`,
       html: htmlContent,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Message sent: %s", info.messageId);
+    const chunkSize = 80;
+    for (let i = 0; i < allEmails.length; i += chunkSize) {
+      const chunk = allEmails.slice(i, i + chunkSize);
+      const info = await transporter.sendMail({
+        ...mailOptions,
+        bcc: chunk.join(',')
+      });
+      console.log("Message sent to chunk %d: %s", i/chunkSize + 1, info.messageId);
+    }
 
     // Update match so it doesn't send again
     if (isRealSupabase) {
