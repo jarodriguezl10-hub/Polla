@@ -2268,6 +2268,18 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="rules-section-card" style={{ background: 'rgba(255,255,255,0.45)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(0,72,130,0.1)' }}>
+                  <h4 style={{ margin: '0 0 8px 0', color: 'var(--color-secondary)', fontSize: '0.95rem', fontWeight: 700 }}>⚖️ Criterios de Clasificación y Desempate</h4>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '0.88rem', color: 'var(--color-text)' }}>Para garantizar transparencia, el ranking se define bajo la siguiente jerarquía:</p>
+                  <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '0.88rem', color: 'var(--color-text)', lineHeight: '1.6' }}>
+                    <li><strong>Puntos Totales:</strong> La suma acumulada según las reglas de juego.</li>
+                    <li><strong>Marcadores Exactos:</strong> Cantidad de veces que se acertó el resultado exacto (ej. 2-1).</li>
+                    <li><strong>Ganador Correcto:</strong> Cantidad de veces que se acertó el equipo ganador (sin importar el marcador).</li>
+                    <li><strong>Goles Totales:</strong> Cantidad de veces que se acertó el número total de goles del partido.</li>
+                    <li><strong>Fecha de Registro:</strong> En caso de persistir el empate, la posición superior será para quien se registró primero en la plataforma.</li>
+                  </ol>
+                </div>
+
+                <div className="rules-section-card" style={{ background: 'rgba(255,255,255,0.45)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(0,72,130,0.1)' }}>
                   <h4 style={{ margin: '0 0 8px 0', color: 'var(--color-secondary)', fontSize: '0.95rem', fontWeight: 700 }}>🏆 Distribución de Premios</h4>
                   <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.88rem', color: 'var(--color-text)', lineHeight: '1.6' }}>
                     <li><strong>Primer puesto:</strong> 60% del fondo acumulado.</li>
