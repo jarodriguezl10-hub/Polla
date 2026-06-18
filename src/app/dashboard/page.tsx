@@ -246,7 +246,7 @@ export default function DashboardPage() {
 
   // Load active tab data
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser?.id) return;
 
     if (activeTab === 'tab-dashboard') {
       loadDashboardData();
