@@ -303,7 +303,7 @@ export default function DashboardPage() {
             setChatMessages(data);
           }
         } catch (e) { /* ignore */ }
-      }, 3000);
+      }, 15000); // Increased from 3s to 15s to save requests
 
       return () => { clearInterval(chatInterval); };
     }
@@ -326,7 +326,7 @@ export default function DashboardPage() {
           setUnreadCount(unseen.length);
         }
       } catch (e) { /* ignore */ }
-    }, 15000); // poll every 15 sec
+    }, 60000); // Increased from 15s to 60s to save requests
     return () => clearInterval(interval);
   }, [showFloatingChat, currentUser]);
 
