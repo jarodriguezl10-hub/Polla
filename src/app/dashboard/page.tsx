@@ -296,6 +296,7 @@ export default function DashboardPage() {
       };
     } else {
       chatInterval = setInterval(async () => {
+        if (document.hidden) return; // Skip polling if tab is inactive
         try {
           const res = await fetch(`/api/chat?userId=${currentUser.id}`);
           if (res.ok) {
@@ -313,6 +314,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (showFloatingChat || !currentUser) return; // already watching live
     const interval = setInterval(async () => {
+      if (document.hidden) return; // Skip polling if tab is inactive
       try {
         const res = await fetch(`/api/chat?userId=${currentUser.id}`);
         if (res.ok) {
