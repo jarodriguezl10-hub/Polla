@@ -135,12 +135,12 @@ export async function GET(request: Request) {
     statsList.sort((a: any, b: any) => {
       const pointsDiff = b.points - a.points;
       if (pointsDiff !== 0) return pointsDiff;
-      const diffDiff = b.diff_matches - a.diff_matches;
-      if (diffDiff !== 0) return diffDiff;
-      const winnerDiff = b.winner_matches - a.winner_matches;
-      if (winnerDiff !== 0) return winnerDiff;
       const exactDiff = b.exact_matches - a.exact_matches;
       if (exactDiff !== 0) return exactDiff;
+      const winnerDiff = b.winner_matches - a.winner_matches;
+      if (winnerDiff !== 0) return winnerDiff;
+      const diffDiff = b.diff_matches - a.diff_matches;
+      if (diffDiff !== 0) return diffDiff;
       const dateA = new Date(a.created_at).getTime();
       const dateB = new Date(b.created_at).getTime();
       return dateA - dateB;
@@ -153,12 +153,12 @@ export async function GET(request: Request) {
     statsList.sort((a: any, b: any) => {
       const pointsDiff = b.prev_points - a.prev_points;
       if (pointsDiff !== 0) return pointsDiff;
-      const diffDiff = b.prev_diff - a.prev_diff;
-      if (diffDiff !== 0) return diffDiff;
-      const winnerDiff = b.prev_winner - a.prev_winner;
-      if (winnerDiff !== 0) return winnerDiff;
       const exactDiff = b.prev_exact - a.prev_exact;
       if (exactDiff !== 0) return exactDiff;
+      const winnerDiff = b.prev_winner - a.prev_winner;
+      if (winnerDiff !== 0) return winnerDiff;
+      const diffDiff = b.prev_diff - a.prev_diff;
+      if (diffDiff !== 0) return diffDiff;
       const dateA = new Date(a.created_at).getTime();
       const dateB = new Date(b.created_at).getTime();
       return dateA - dateB;
